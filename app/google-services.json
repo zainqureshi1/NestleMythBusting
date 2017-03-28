@@ -1,0 +1,38 @@
+{
+  "project_info": {
+    "project_number": "223800008428",
+    "project_id": "nestlemythbusting-sample"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:223800008428:android:1d669e4dc8fb17aa",
+        "android_client_info": {
+          "package_name": "com.e2esp.nestlemythbusting.sample"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBH2cy-rh1gP5K3wwcQeWgs37GzYbzuIZY"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 2,
+          "analytics_property": {
+            "tracking_id": "UA-96310691-1"
+          }
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 1
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

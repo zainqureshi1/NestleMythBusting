@@ -13,9 +13,12 @@ import android.widget.Toast;
 import android.widget.VideoView;
 
 import com.e2esp.nestlemythbusting.R;
+import com.e2esp.nestlemythbusting.applications.NestleApplication;
 import com.e2esp.nestlemythbusting.models.Brand;
 import com.e2esp.nestlemythbusting.models.Video;
 import com.e2esp.nestlemythbusting.utils.Consts;
+import com.google.android.gms.analytics.HitBuilders;
+import com.google.android.gms.analytics.Tracker;
 
 import java.io.File;
 
@@ -45,6 +48,7 @@ public class PlayerActivity extends AppCompatActivity {
 
         setupView();
         setupVideo();
+        sendAnalyticsScreenHit();
     }
 
     private void setupView() {
@@ -121,6 +125,13 @@ public class PlayerActivity extends AppCompatActivity {
 
     private void videoCompleted() {
         finish();
+    }
+
+    private void sendAnalyticsScreenHit() {
+        Tracker tracker = ((NestleApplication)getApplication()).getTracker();
+        tracker.setScreenName(brand.getName()+ " :: " + video.getTitle() + " Player Screen");
+        tracker.send(new HitBuilders.ScreenViewBuilder().build());
+        tracker.setScreenName(null);
     }
 
     private boolean backPressed = false;

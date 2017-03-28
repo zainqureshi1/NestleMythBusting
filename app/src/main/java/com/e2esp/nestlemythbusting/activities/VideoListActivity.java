@@ -19,6 +19,7 @@ import com.dropbox.core.v2.files.ListFolderResult;
 import com.dropbox.core.v2.files.Metadata;
 import com.e2esp.nestlemythbusting.R;
 import com.e2esp.nestlemythbusting.adapters.VideoRecyclerAdapter;
+import com.e2esp.nestlemythbusting.applications.NestleApplication;
 import com.e2esp.nestlemythbusting.callbacks.OnVideoClickListener;
 import com.e2esp.nestlemythbusting.models.Brand;
 import com.e2esp.nestlemythbusting.models.Video;
@@ -29,6 +30,8 @@ import com.e2esp.nestlemythbusting.utils.ListFolderTask;
 import com.e2esp.nestlemythbusting.utils.PermissionManager;
 import com.e2esp.nestlemythbusting.utils.Utility;
 import com.e2esp.nestlemythbusting.utils.VerticalSpacingItemDecoration;
+import com.google.android.gms.analytics.HitBuilders;
+import com.google.android.gms.analytics.Tracker;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -69,6 +72,7 @@ public class VideoListActivity extends AppCompatActivity {
 
         setupView();
         loadVideoFiles();
+        sendAnalyticsScreenHit();
     }
 
     @Override
@@ -343,6 +347,13 @@ public class VideoListActivity extends AppCompatActivity {
         }
         Utility.Prefs.setPref(VideoListActivity.this, brand.getName()+Consts.Keys.DOWNLOADED_VIDEOS, downloaded);
         Utility.Prefs.setPref(VideoListActivity.this, brand.getName()+Consts.Keys.TOTAL_VIDEOS, total);
+    }
+
+    private void sendAnalyticsScreenHit() {
+        Tracker tracker = ((NestleApplication)getApplication()).getTracker();
+        tracker.setScreenName(brand.getName()+ " Video List Screen");
+        tracker.send(new HitBuilders.ScreenViewBuilder().build());
+        tracker.setScreenName(null);
     }
 
     @Override
