@@ -1,0 +1,38 @@
+<resources>
+    <string name="app_name">Myth Busting</string>
+
+    <string name="dropbox_app_key">6xr9uc9cluxz5mv</string>
+    <string name="dropbox_access_token">TDUoYFNV4GAAAAAAAAAACMIwjN5uxcD_WEDo57tgxYCaxgl0VpXUo4quYoLgNWj9</string>
+
+    <string name="welcome_text">This application aims to connect with consumers around their queries and concerns about our brands, with easy to use video responses.</string>
+
+    <string name="access_app">ACCESS APP</string>
+
+    <string name="description_above_brands">For any queries related to a specific brand click on the videos below</string>
+
+    <string name="swipe_to_reload">SWIPE TO RELOAD</string>
+
+    <string name="brand_name">Brand Name</string>
+    <string name="videos_downloaded">VIDEOS DOWNLOADED</string>
+    <string name="video_title">Video Title</string>
+
+    <string name="incomplete">Incomplete</string>
+    <string name="deleted">Deleted</string>
+
+    <string name="download">Download</string>
+    <string name="download_again">Download Again</string>
+
+    <string name="download_video_first">Please download video first</string>
+    <string name="wait_for_download_completion">Please wait for download to complete</string>
+    <string name="download_video_again">Please download video again</string>
+
+    <string name="connect_to_internet">Connect to internet and try again</string>
+    <string name="unable_to_get_brands">Unable to get Brands. Please try again.</string>
+    <string name="unable_to_get_videos">Unable to get Videos. Please try again.</string>
+    <string name="cannot_download_video_permission_denied">Can\'t download video: write access denied.</string>
+    <string name="grant_storage_permission">Please grant storage permission to complete action.</string>
+
+    <string name="press_back_again_to_exit">Press BACK again to exit</string>
+    <string name="press_back_again_to_close">Press BACK again to close</string>
+
+</resources>
