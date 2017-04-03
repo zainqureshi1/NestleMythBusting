@@ -22,6 +22,7 @@ public class Video implements Parcelable {
 
     private String title;
     private String path;
+    private Description description;
     private String filePath;
     private Bitmap thumbnail;
 
@@ -46,6 +47,14 @@ public class Video implements Parcelable {
 
     public String getPath() {
         return path;
+    }
+
+    public void setDescription(Description description) {
+        this.description = description;
+    }
+
+    public Description getDescription() {
+        return description;
     }
 
     public String getFilePath() {

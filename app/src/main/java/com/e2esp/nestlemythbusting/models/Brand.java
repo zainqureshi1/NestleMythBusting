@@ -3,6 +3,8 @@ package com.e2esp.nestlemythbusting.models;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+import java.util.Locale;
+
 /**
  * Created by Zain on 3/22/2017.
  */
@@ -88,7 +90,16 @@ public class Brand implements Parcelable {
     public static class Comparator implements java.util.Comparator<Brand> {
         @Override
         public int compare(Brand brand1, Brand brand2) {
+            if (isCorporateBrand(brand1)) {
+                return 1;
+            }
+            if (isCorporateBrand(brand2)) {
+                return -1;
+            }
             return brand1.getName().compareTo(brand2.getName());
+        }
+        private boolean isCorporateBrand(Brand brand) {
+            return brand.getName().toLowerCase(Locale.getDefault()).contains("corporate");
         }
     }
 

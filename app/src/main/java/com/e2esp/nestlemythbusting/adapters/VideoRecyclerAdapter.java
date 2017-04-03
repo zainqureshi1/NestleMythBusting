@@ -58,6 +58,7 @@ public class VideoRecyclerAdapter extends RecyclerView.Adapter<VideoRecyclerAdap
         private View topView;
         private ImageView imageViewPreview;
         private TextView textViewTitle;
+        private TextView textViewDescription;
         private TextView textViewStatus;
         private TextView textViewDownload;
         private ProgressBar progressBar;
@@ -69,6 +70,8 @@ public class VideoRecyclerAdapter extends RecyclerView.Adapter<VideoRecyclerAdap
             textViewTitle = (TextView) itemView.findViewById(R.id.textViewVideoTitle);
             textViewTitle.setTypeface(font);
             textViewTitle.setSelected(true);
+            textViewDescription = (TextView) itemView.findViewById(R.id.textViewVideoDescription);
+            textViewDescription.setTypeface(font);
             textViewStatus = (TextView) itemView.findViewById(R.id.textViewVideoStatus);
             textViewStatus.setTypeface(font);
             textViewDownload = (TextView) itemView.findViewById(R.id.textViewVideoDownload);
@@ -80,6 +83,7 @@ public class VideoRecyclerAdapter extends RecyclerView.Adapter<VideoRecyclerAdap
             textViewTitle.setText(video.getTitleWithoutExt());
             switch (video.getStatus()) {
                 case NotDownloaded:
+                    textViewDescription.setText("");
                     textViewStatus.setText("");
                     textViewDownload.setVisibility(View.VISIBLE);
                     textViewDownload.setText(context.getString(R.string.download));
@@ -87,6 +91,7 @@ public class VideoRecyclerAdapter extends RecyclerView.Adapter<VideoRecyclerAdap
                     imageViewPreview.setImageResource(R.drawable.video_preview);
                     break;
                 case Downloading:
+                    textViewDescription.setText("");
                     textViewStatus.setText(video.getProgressText());
                     textViewDownload.setVisibility(View.INVISIBLE);
                     progressBar.setVisibility(View.VISIBLE);
@@ -94,6 +99,7 @@ public class VideoRecyclerAdapter extends RecyclerView.Adapter<VideoRecyclerAdap
                     imageViewPreview.setImageResource(R.drawable.video_preview);
                     break;
                 case Downloaded:
+                    textViewDescription.setText(video.getDescription().getDescription());
                     textViewStatus.setText("");
                     textViewDownload.setVisibility(View.INVISIBLE);
                     progressBar.setVisibility(View.GONE);
@@ -103,6 +109,7 @@ public class VideoRecyclerAdapter extends RecyclerView.Adapter<VideoRecyclerAdap
                     }
                     break;
                 case Incomplete:
+                    textViewDescription.setText("");
                     textViewStatus.setText(context.getString(R.string.incomplete));
                     textViewDownload.setVisibility(View.VISIBLE);
                     textViewDownload.setText(context.getString(R.string.download_again));
@@ -110,6 +117,7 @@ public class VideoRecyclerAdapter extends RecyclerView.Adapter<VideoRecyclerAdap
                     imageViewPreview.setImageResource(R.drawable.video_preview);
                     break;
                 case Deleted:
+                    textViewDescription.setText("");
                     textViewStatus.setText(context.getString(R.string.deleted));
                     textViewDownload.setVisibility(View.VISIBLE);
                     textViewDownload.setText(context.getString(R.string.download_again));

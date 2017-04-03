@@ -15,6 +15,7 @@
     <string name="brand_name">Brand Name</string>
     <string name="videos_downloaded">VIDEOS DOWNLOADED</string>
     <string name="video_title">Video Title</string>
+    <string name="video_description">Video Description</string>
 
     <string name="incomplete">Incomplete</string>
     <string name="deleted">Deleted</string>

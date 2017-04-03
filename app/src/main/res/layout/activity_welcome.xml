@@ -43,6 +43,6 @@
         android:textColor="@color/colorLogo"
         android:textSize="@dimen/text_size_medium"
         android:textStyle="bold"
-        android:background="@drawable/button_with_shadow" />
+        android:background="@drawable/button_with_gradient" />
 
 </RelativeLayout>

@@ -17,7 +17,7 @@ import java.io.OutputStream;
  * Created by Zain on 3/24/2017.
  */
 
-public class DownloadFileTask extends AsyncTask<Void, Long, File> {
+public class DownloadVideoTask extends AsyncTask<Void, Long, File> {
 
     private final Context mContext;
     private final DbxClientV2 mDbxClient;
@@ -26,7 +26,7 @@ public class DownloadFileTask extends AsyncTask<Void, Long, File> {
     private final Callback mCallback;
     private Exception mException;
 
-    public DownloadFileTask(Context context, DbxClientV2 dbxClient, File file, Video video, Callback callback) {
+    public DownloadVideoTask(Context context, DbxClientV2 dbxClient, File file, Video video, Callback callback) {
         mContext = context;
         mDbxClient = dbxClient;
         mFile = file;

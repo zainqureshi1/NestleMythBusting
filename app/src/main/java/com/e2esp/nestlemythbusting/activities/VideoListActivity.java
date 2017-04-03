@@ -22,9 +22,11 @@ import com.e2esp.nestlemythbusting.adapters.VideoRecyclerAdapter;
 import com.e2esp.nestlemythbusting.applications.NestleApplication;
 import com.e2esp.nestlemythbusting.callbacks.OnVideoClickListener;
 import com.e2esp.nestlemythbusting.models.Brand;
+import com.e2esp.nestlemythbusting.models.Description;
 import com.e2esp.nestlemythbusting.models.Video;
 import com.e2esp.nestlemythbusting.utils.Consts;
-import com.e2esp.nestlemythbusting.utils.DownloadFileTask;
+import com.e2esp.nestlemythbusting.utils.DownloadVideoTask;
+import com.e2esp.nestlemythbusting.utils.DownloadDescriptionTask;
 import com.e2esp.nestlemythbusting.utils.DropboxClientFactory;
 import com.e2esp.nestlemythbusting.utils.ListFolderTask;
 import com.e2esp.nestlemythbusting.utils.PermissionManager;
@@ -37,6 +39,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 
 public class VideoListActivity extends AppCompatActivity {
     private final String TAG = this.getClass().getName();
@@ -51,8 +54,10 @@ public class VideoListActivity extends AppCompatActivity {
     private ListFolderTask listFolderTask;
     private ProgressDialog progressDialogList;
 
-    private DownloadFileTask downloadFileTask;
+    private DownloadVideoTask downloadVideoTask;
     private ProgressDialog progressDialogDownload;
+
+    private ArrayList<DownloadDescriptionTask> descriptionTasks;
 
     private Brand brand;
 
@@ -71,7 +76,7 @@ public class VideoListActivity extends AppCompatActivity {
         setTitle(brand.getName());
 
         setupView();
-        loadVideoFiles();
+        startFilesLoading();
         sendAnalyticsScreenHit();
     }
 
@@ -120,6 +125,24 @@ public class VideoListActivity extends AppCompatActivity {
         progressDialogDownload.setProgressNumberFormat("");
     }
 
+    private void startFilesLoading() {
+        PermissionManager.getInstance().checkPermissionRequest(this,
+                Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                Consts.RequestCodes.PERMISSION_STORAGE,
+                getString(R.string.app_name) + " require permission to save video in device storage",
+                new PermissionManager.Callback() {
+                    @Override
+                    public void onGranted() {
+                        loadVideoFiles();
+                    }
+                    @Override
+                    public void onDenied() {
+                        Utility.showToast(VideoListActivity.this, getString(R.string.cannot_download_video_permission_denied)
+                                + " " + getString(R.string.grant_storage_permission));
+                    }
+                });
+    }
+
     private void loadVideoFiles() {
         if (!Utility.isInternetConnected(this, true)) {
             swipeRefreshLayout.setRefreshing(false);
@@ -147,16 +170,32 @@ public class VideoListActivity extends AppCompatActivity {
                 if (result != null) {
                     List<Metadata> entities = result.getEntries();
                     if (entities != null) {
+                        ArrayList<Description> descriptions = new ArrayList<>();
                         for (int i = 0; i < entities.size(); i++) {
                             Metadata entity = entities.get(i);
                             if (entity instanceof FileMetadata) {
-                                Video.Status status = getVideoStatus(entity.getName());
-                                videosArrayList.add(new Video(entity.getName(), entity.getPathLower(), getVideoFile(entity.getName()).getAbsolutePath(), status));
+                                if (isTextFile(entity.getName())) {
+                                    descriptions.add(new Description(entity.getName(), entity.getPathLower()));
+                                } else {
+                                    Video.Status status = getVideoStatus(entity.getName());
+                                    videosArrayList.add(new Video(entity.getName(), entity.getPathLower(), getVideoFile(entity.getName()).getAbsolutePath(), status));
+                                }
+                            }
+                        }
+                        for (int i = 0; i < descriptions.size(); i++) {
+                            Description description = descriptions.get(i);
+                            String fileName = description.getFileNameWithoutExt();
+                            for (int j = 0; j < videosArrayList.size(); j++) {
+                                if (fileName.equalsIgnoreCase(videosArrayList.get(j).getTitleWithoutExt())) {
+                                    videosArrayList.get(j).setDescription(description);
+                                    break;
+                                }
                             }
                         }
                         Collections.sort(videosArrayList, new Video.Comparator());
                         videoRecyclerAdapter.notifyDataSetChanged();
                         updateVideosCount();
+                        downloadDescriptions();
                         return;
                     }
                 }
@@ -176,6 +215,10 @@ public class VideoListActivity extends AppCompatActivity {
             }
         });
         listFolderTask.execute(brand.getPath());
+    }
+
+    private boolean isTextFile(String fileName) {
+        return fileName.toLowerCase(Locale.getDefault()).endsWith(".txt");
     }
 
     private Video.Status getVideoStatus(String fileName) {
@@ -284,7 +327,7 @@ public class VideoListActivity extends AppCompatActivity {
         }
 
         File brandFolder = getVideoFile(videoToDownload.getTitle());
-        downloadFileTask = new DownloadFileTask(this, DropboxClientFactory.getClient(), brandFolder, videoToDownload, new DownloadFileTask.Callback() {
+        downloadVideoTask = new DownloadVideoTask(this, DropboxClientFactory.getClient(), brandFolder, videoToDownload, new DownloadVideoTask.Callback() {
             @Override
             public void onDownloadStart(Video video) {
                 updateVideoStatus(video, Video.Status.Downloading);
@@ -308,7 +351,7 @@ public class VideoListActivity extends AppCompatActivity {
                 Utility.showToast(VideoListActivity.this, "Error: "+e.getMessage());
             }
         });
-        downloadFileTask.execute();
+        downloadVideoTask.execute();
     }
 
     private void updateVideoStatus(Video video, Video.Status status) {
@@ -349,11 +392,49 @@ public class VideoListActivity extends AppCompatActivity {
         Utility.Prefs.setPref(VideoListActivity.this, brand.getName()+Consts.Keys.TOTAL_VIDEOS, total);
     }
 
+    private int descriptionsToDownload;
+    private void downloadDescriptions() {
+        cancelDescriptionTasks();
+        descriptionTasks = new ArrayList<>();
+        descriptionsToDownload = videosArrayList.size();
+        for (int i = 0; i < videosArrayList.size(); i++) {
+            Description description = videosArrayList.get(i).getDescription();
+            if (description != null) {
+                DownloadDescriptionTask downloadDescriptionTask = new DownloadDescriptionTask(DropboxClientFactory.getClient(), description, new DownloadDescriptionTask.Callback() {
+                    public void onDownloadComplete(Description description, String result) {
+                        description.setDescription(result);
+                        descriptionsToDownload--;
+                        if (descriptionsToDownload <= 0) {
+                            videoRecyclerAdapter.notifyDataSetChanged();
+                        }
+                    }
+                    public void onError(Description description, Exception e) {
+                        descriptionsToDownload--;
+                        if (descriptionsToDownload <= 0) {
+                            videoRecyclerAdapter.notifyDataSetChanged();
+                        }
+                    }
+                });
+                downloadDescriptionTask.execute();
+                descriptionTasks.add(downloadDescriptionTask);
+            }
+        }
+    }
+
     private void sendAnalyticsScreenHit() {
         Tracker tracker = ((NestleApplication)getApplication()).getTracker();
         tracker.setScreenName(brand.getName()+ " Video List Screen");
         tracker.send(new HitBuilders.ScreenViewBuilder().build());
         tracker.setScreenName(null);
+    }
+
+    private void cancelDescriptionTasks() {
+        if (descriptionTasks != null) {
+            for (int i = 0; i < descriptionTasks.size(); i++) {
+                descriptionTasks.get(i).cancel(true);
+            }
+            descriptionTasks.clear();
+        }
     }
 
     @Override
@@ -363,9 +444,10 @@ public class VideoListActivity extends AppCompatActivity {
         if (listFolderTask != null) {
             listFolderTask.cancel(true);
         }
-        if (downloadFileTask != null) {
-            downloadFileTask.cancel(true);
+        if (downloadVideoTask != null) {
+            downloadVideoTask.cancel(true);
         }
+        cancelDescriptionTasks();
     }
 
 }
