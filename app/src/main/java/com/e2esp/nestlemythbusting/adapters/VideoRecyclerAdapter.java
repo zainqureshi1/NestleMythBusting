@@ -81,9 +81,9 @@ public class VideoRecyclerAdapter extends RecyclerView.Adapter<VideoRecyclerAdap
 
         public void bindView(final Video video) {
             textViewTitle.setText(video.getTitleWithoutExt());
+            textViewDescription.setText(video.getDescription().getDescription());
             switch (video.getStatus()) {
                 case NotDownloaded:
-                    textViewDescription.setText("");
                     textViewStatus.setText("");
                     textViewDownload.setVisibility(View.VISIBLE);
                     textViewDownload.setText(context.getString(R.string.download));
@@ -91,17 +91,15 @@ public class VideoRecyclerAdapter extends RecyclerView.Adapter<VideoRecyclerAdap
                     imageViewPreview.setImageResource(R.drawable.video_preview);
                     break;
                 case Downloading:
-                    textViewDescription.setText("");
                     textViewStatus.setText(video.getProgressText());
-                    textViewDownload.setVisibility(View.INVISIBLE);
+                    textViewDownload.setVisibility(View.GONE);
                     progressBar.setVisibility(View.VISIBLE);
                     progressBar.setProgress(video.getProgress());
                     imageViewPreview.setImageResource(R.drawable.video_preview);
                     break;
                 case Downloaded:
-                    textViewDescription.setText(video.getDescription().getDescription());
                     textViewStatus.setText("");
-                    textViewDownload.setVisibility(View.INVISIBLE);
+                    textViewDownload.setVisibility(View.GONE);
                     progressBar.setVisibility(View.GONE);
                     Bitmap thumbnail = video.getThumbnail();
                     if (thumbnail != null) {
@@ -109,7 +107,6 @@ public class VideoRecyclerAdapter extends RecyclerView.Adapter<VideoRecyclerAdap
                     }
                     break;
                 case Incomplete:
-                    textViewDescription.setText("");
                     textViewStatus.setText(context.getString(R.string.incomplete));
                     textViewDownload.setVisibility(View.VISIBLE);
                     textViewDownload.setText(context.getString(R.string.download_again));
@@ -117,7 +114,6 @@ public class VideoRecyclerAdapter extends RecyclerView.Adapter<VideoRecyclerAdap
                     imageViewPreview.setImageResource(R.drawable.video_preview);
                     break;
                 case Deleted:
-                    textViewDescription.setText("");
                     textViewStatus.setText(context.getString(R.string.deleted));
                     textViewDownload.setVisibility(View.VISIBLE);
                     textViewDownload.setText(context.getString(R.string.download_again));

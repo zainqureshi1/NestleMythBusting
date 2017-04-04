@@ -13,6 +13,8 @@ public class Brand implements Parcelable {
 
     private String name;
     private String path;
+
+    private int logoRes;
     private String logoPath;
 
     private int totalVideos;
@@ -21,6 +23,13 @@ public class Brand implements Parcelable {
     public Brand(String name, String path) {
         this.name = name;
         this.path = path;
+        this.logoRes = -1;
+    }
+
+    public Brand(String name, int logoRes) {
+        this.name = name;
+        this.path = "/" + name.toLowerCase();
+        this.logoRes = logoRes;
     }
 
     public String getName() {
@@ -29,6 +38,10 @@ public class Brand implements Parcelable {
 
     public String getPath() {
         return path;
+    }
+
+    public int getLogoRes() {
+        return logoRes;
     }
 
     public void setLogoPath(String logoPath) {
@@ -55,9 +68,6 @@ public class Brand implements Parcelable {
     public Brand(Parcel in) {
         this.name = in.readString();
         this.path = in.readString();
-        this.logoPath = in.readString();
-        this.totalVideos = in.readInt();
-        this.downloadedVideos = in.readInt();
     }
 
     @Override
@@ -69,9 +79,6 @@ public class Brand implements Parcelable {
     public void writeToParcel(Parcel dest, int flags) {
         dest.writeString(getName());
         dest.writeString(getPath());
-        dest.writeString(getLogoPath());
-        dest.writeInt(getTotalVideos());
-        dest.writeInt(getDownloadedVideos());
     }
 
     public static final Parcelable.Creator<Brand> CREATOR = new Parcelable.Creator<Brand>() {

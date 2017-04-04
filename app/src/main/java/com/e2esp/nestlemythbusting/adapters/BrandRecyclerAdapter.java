@@ -85,17 +85,23 @@ public class BrandRecyclerAdapter extends RecyclerView.Adapter<BrandRecyclerAdap
                 textViewVideosCount.setText("");
             }
 
-            picasso.load(FileThumbnailRequestHandler.buildPicassoUri(brand.getLogoPath()))
-                    .into(imageViewLogo, new Callback() {
-                        @Override
-                        public void onSuccess() {
-                            progressBarLogo.setVisibility(View.GONE);
-                        }
-                        @Override
-                        public void onError() {
-                            progressBarLogo.setVisibility(View.GONE);
-                        }
-                    });
+            if (brand.getLogoRes() > 0) {
+                progressBarLogo.setVisibility(View.GONE);
+                imageViewLogo.setImageResource(brand.getLogoRes());
+            } else {
+                picasso.load(FileThumbnailRequestHandler.buildPicassoUri(brand.getLogoPath()))
+                        .into(imageViewLogo, new Callback() {
+                            @Override
+                            public void onSuccess() {
+                                progressBarLogo.setVisibility(View.GONE);
+                            }
+
+                            @Override
+                            public void onError() {
+                                progressBarLogo.setVisibility(View.GONE);
+                            }
+                        });
+            }
 
             topView.setOnClickListener(new View.OnClickListener() {
                 @Override

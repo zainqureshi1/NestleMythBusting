@@ -58,7 +58,7 @@ public class MainActivity extends AppCompatActivity {
 
         setupDropbox();
         setupView();
-        loadBrandFolders();
+        loadBrandFoldersOffline();
     }
 
     private void setupView() {
@@ -174,6 +174,28 @@ public class MainActivity extends AppCompatActivity {
             }
         });
         listFolderTask.execute("");
+    }
+
+    private void loadBrandFoldersOffline() {
+        swipeRefreshLayout.setRefreshing(false);
+        textViewSwipeHint.setVisibility(View.GONE);
+        brandArrayList.clear();
+
+        brandArrayList.add(new Brand("Nestlé BUNYAD", R.drawable.nestle_bunyad));
+        brandArrayList.add(new Brand("Nestlé EVERYDAY", R.drawable.nestle_everyday));
+        brandArrayList.add(new Brand("Nestlé JUICES", R.drawable.nestle_juices));
+        brandArrayList.add(new Brand("Nestlé MAGGI", R.drawable.nestle_maggi));
+        brandArrayList.add(new Brand("Nestlé MILKPAK", R.drawable.nestle_milkpak));
+        brandArrayList.add(new Brand("Nestlé MILKPAK YOGURT", R.drawable.nestle_milkpak_yogurt));
+        brandArrayList.add(new Brand("Nestlé NESCAFÉ", R.drawable.nestle_nescafe));
+        brandArrayList.add(new Brand("Nestlé NIDO FORTIGROW", R.drawable.nestle_nido_fortigrow));
+        brandArrayList.add(new Brand("Nestlé NIDO GUMS", R.drawable.nestle_nido_gums));
+        brandArrayList.add(new Brand("Nestlé PURE LIFE", R.drawable.nestle_pure_life));
+
+        textViewDescription.setVisibility(View.VISIBLE);
+        Collections.sort(brandArrayList, new Brand.Comparator());
+        brandRecyclerAdapter.notifyDataSetChanged();
+        updateVideosCount();
     }
 
     private boolean isImage(Metadata metadata) {
