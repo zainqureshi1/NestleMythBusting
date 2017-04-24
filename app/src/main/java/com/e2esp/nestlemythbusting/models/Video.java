@@ -37,6 +37,14 @@ public class Video implements Parcelable {
         this.status = status;
     }
 
+    public Video(String title, String path, String filePath, Status status, Description description) {
+        this.title = title;
+        this.path = path;
+        this.filePath = filePath;
+        this.status = status;
+        this.description = description;
+    }
+
     public String getTitle() {
         return title;
     }

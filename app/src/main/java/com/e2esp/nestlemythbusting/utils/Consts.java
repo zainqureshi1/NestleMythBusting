@@ -17,7 +17,6 @@ public class Consts {
 
     public static class Keys {
         public static final String STATUS = "_STATUS";
-        public static final String TOTAL_VIDEOS = "_TOTAL_VIDEOS";
         public static final String DOWNLOADED_VIDEOS = "_DOWNLOADED_VIDEOS";
     }
 

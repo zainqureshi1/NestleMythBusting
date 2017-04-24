@@ -16,12 +16,14 @@ public class Description {
         this.description = "";
     }
 
-    public String getFilePath() {
-        return filePath;
+    public Description(String fileName, String filePath, String description) {
+        this.fileName = fileName;
+        this.filePath = filePath;
+        this.description = description;
     }
 
-    public String getFileName() {
-        return fileName;
+    public String getFilePath() {
+        return filePath;
     }
 
     public String getFileNameWithoutExt() {

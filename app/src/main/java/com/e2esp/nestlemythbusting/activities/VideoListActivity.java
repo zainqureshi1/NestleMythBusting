@@ -23,12 +23,14 @@ import com.e2esp.nestlemythbusting.applications.NestleApplication;
 import com.e2esp.nestlemythbusting.callbacks.OnVideoClickListener;
 import com.e2esp.nestlemythbusting.models.Brand;
 import com.e2esp.nestlemythbusting.models.Description;
+import com.e2esp.nestlemythbusting.models.Title;
 import com.e2esp.nestlemythbusting.models.Video;
 import com.e2esp.nestlemythbusting.utils.Consts;
 import com.e2esp.nestlemythbusting.utils.DownloadVideoTask;
 import com.e2esp.nestlemythbusting.utils.DownloadDescriptionTask;
 import com.e2esp.nestlemythbusting.utils.DropboxClientFactory;
 import com.e2esp.nestlemythbusting.utils.ListFolderTask;
+import com.e2esp.nestlemythbusting.utils.OfflineDataLoader;
 import com.e2esp.nestlemythbusting.utils.PermissionManager;
 import com.e2esp.nestlemythbusting.utils.Utility;
 import com.e2esp.nestlemythbusting.utils.VerticalSpacingItemDecoration;
@@ -76,7 +78,7 @@ public class VideoListActivity extends AppCompatActivity {
         setTitle(brand.getName());
 
         setupView();
-        startFilesLoading();
+        startOfflineLoading();
         sendAnalyticsScreenHit();
     }
 
@@ -93,9 +95,10 @@ public class VideoListActivity extends AppCompatActivity {
         swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
-                loadVideoFiles();
+                startFilesLoading();
             }
         });
+        swipeRefreshLayout.setEnabled(false);
 
         videosRecyclerView = (RecyclerView) findViewById(R.id.recyclerViewVideos);
         videosArrayList = new ArrayList<>();
@@ -123,6 +126,43 @@ public class VideoListActivity extends AppCompatActivity {
         progressDialogDownload.setCancelable(false);
         progressDialogDownload.setMessage("Downloading Video");
         progressDialogDownload.setProgressNumberFormat("");
+    }
+
+    private void startOfflineLoading() {
+        PermissionManager.getInstance().checkPermissionRequest(this,
+                Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                Consts.RequestCodes.PERMISSION_STORAGE,
+                getString(R.string.app_name) + " require permission to save video in device storage",
+                new PermissionManager.Callback() {
+                    @Override
+                    public void onGranted() {
+                        loadVideoTitlesOffline();
+                    }
+                    @Override
+                    public void onDenied() {
+                        Utility.showToast(VideoListActivity.this, getString(R.string.cannot_download_video_permission_denied)
+                                + " " + getString(R.string.grant_storage_permission));
+                    }
+                });
+    }
+
+    private void loadVideoTitlesOffline() {
+        textViewSwipeHint.setVisibility(View.GONE);
+        videosArrayList.clear();
+
+        ArrayList<Title> titlesList = OfflineDataLoader.videoTitlesList(brand.getName());
+        for (Title title: titlesList) {
+            videosArrayList.add(createOfflineVideo(title.getTitle(), title.getDescription()));
+        }
+
+        Collections.sort(videosArrayList, new Video.Comparator());
+        videoRecyclerAdapter.notifyDataSetChanged();
+        updateVideosCount();
+    }
+
+    private Video createOfflineVideo(String videoName, String description) {
+        String brandPath = "/" + brand.getName().toLowerCase() + "/";
+        return new Video(videoName+".mp4", brandPath+videoName.toLowerCase()+".mp4", getVideoFile(videoName+".mp4").getAbsolutePath(), getVideoStatus(videoName+".mp4"), new Description(videoName+".txt", brandPath+videoName.toLowerCase()+".txt", description));
     }
 
     private void startFilesLoading() {
@@ -389,7 +429,6 @@ public class VideoListActivity extends AppCompatActivity {
             }
         }
         Utility.Prefs.setPref(VideoListActivity.this, brand.getName()+Consts.Keys.DOWNLOADED_VIDEOS, downloaded);
-        Utility.Prefs.setPref(VideoListActivity.this, brand.getName()+Consts.Keys.TOTAL_VIDEOS, total);
     }
 
     private int descriptionsToDownload;

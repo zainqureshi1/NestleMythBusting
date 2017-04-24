@@ -24,6 +24,7 @@ import com.e2esp.nestlemythbusting.models.Brand;
 import com.e2esp.nestlemythbusting.utils.Consts;
 import com.e2esp.nestlemythbusting.utils.DropboxClientFactory;
 import com.e2esp.nestlemythbusting.utils.ListFolderTask;
+import com.e2esp.nestlemythbusting.utils.OfflineDataLoader;
 import com.e2esp.nestlemythbusting.utils.PicassoClient;
 import com.e2esp.nestlemythbusting.utils.Utility;
 import com.e2esp.nestlemythbusting.utils.VerticalSpacingItemDecoration;
@@ -76,6 +77,7 @@ public class MainActivity extends AppCompatActivity {
                 loadBrandFolders();
             }
         });
+        swipeRefreshLayout.setEnabled(false);
 
         brandRecyclerView = (RecyclerView) findViewById(R.id.recyclerViewBrands);
         brandArrayList = new ArrayList<>();
@@ -104,8 +106,13 @@ public class MainActivity extends AppCompatActivity {
         if (!Utility.isInternetConnected(this, true)) {
             swipeRefreshLayout.setRefreshing(false);
             progressDialog.dismiss();
-            textViewSwipeHint.setVisibility(View.VISIBLE);
-            textViewDescription.setVisibility(View.INVISIBLE);
+            if (brandArrayList.size() == 0) {
+                textViewSwipeHint.setVisibility(View.VISIBLE);
+                textViewDescription.setVisibility(View.INVISIBLE);
+            } else {
+                textViewSwipeHint.setVisibility(View.GONE);
+                textViewDescription.setVisibility(View.VISIBLE);
+            }
             return;
         }
 
@@ -210,7 +217,7 @@ public class MainActivity extends AppCompatActivity {
         if (brandRecyclerAdapter != null && brandArrayList != null && brandArrayList.size() > 0) {
             for (int i = 0; i < brandArrayList.size(); i++) {
                 Brand brand = brandArrayList.get(i);
-                int total = Utility.Prefs.getPrefInt(MainActivity.this, brand.getName()+Consts.Keys.TOTAL_VIDEOS, 0);
+                int total = OfflineDataLoader.getTotalVideosCount(brand.getName());
                 int downloaded = Utility.Prefs.getPrefInt(MainActivity.this, brand.getName()+Consts.Keys.DOWNLOADED_VIDEOS, 0);
                 brand.setVideos(total, downloaded);
             }
