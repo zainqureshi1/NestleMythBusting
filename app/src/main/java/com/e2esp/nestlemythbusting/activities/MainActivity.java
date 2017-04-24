@@ -191,6 +191,7 @@ public class MainActivity extends AppCompatActivity {
         brandArrayList.add(new Brand("Nestlé NIDO FORTIGROW", R.drawable.nestle_nido_fortigrow));
         brandArrayList.add(new Brand("Nestlé NIDO GUMS", R.drawable.nestle_nido_gums));
         brandArrayList.add(new Brand("Nestlé PURE LIFE", R.drawable.nestle_pure_life));
+        brandArrayList.add(new Brand("Nestlé Corporate", R.drawable.nestle_corporate));
 
         textViewDescription.setVisibility(View.VISIBLE);
         Collections.sort(brandArrayList, new Brand.Comparator());
