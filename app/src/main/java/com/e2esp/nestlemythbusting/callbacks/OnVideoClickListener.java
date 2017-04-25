@@ -8,5 +8,6 @@ import com.e2esp.nestlemythbusting.models.Video;
 
 public interface OnVideoClickListener {
     void onVideoClick(Video video);
+    void onLongClick(Video video);
     void onDownloadClick(Video video);
 }

@@ -82,6 +82,7 @@ public class VideoRecyclerAdapter extends RecyclerView.Adapter<VideoRecyclerAdap
         public void bindView(final Video video) {
             textViewTitle.setText(video.getTitleWithoutExt());
             textViewDescription.setText(video.getDescription().getDescription());
+            Bitmap thumbnail = video.getThumbnail();
             switch (video.getStatus()) {
                 case NotDownloaded:
                     textViewStatus.setText("");
@@ -101,7 +102,6 @@ public class VideoRecyclerAdapter extends RecyclerView.Adapter<VideoRecyclerAdap
                     textViewStatus.setText("");
                     textViewDownload.setVisibility(View.GONE);
                     progressBar.setVisibility(View.GONE);
-                    Bitmap thumbnail = video.getThumbnail();
                     if (thumbnail != null) {
                         imageViewPreview.setImageBitmap(video.getThumbnail());
                     }
@@ -112,6 +112,15 @@ public class VideoRecyclerAdapter extends RecyclerView.Adapter<VideoRecyclerAdap
                     textViewDownload.setText(context.getString(R.string.download_again));
                     progressBar.setVisibility(View.GONE);
                     imageViewPreview.setImageResource(R.drawable.video_preview);
+                    break;
+                case Outdated:
+                    textViewStatus.setText(context.getString(R.string.outdated));
+                    textViewDownload.setVisibility(View.VISIBLE);
+                    textViewDownload.setText(context.getString(R.string.update));
+                    progressBar.setVisibility(View.GONE);
+                    if (thumbnail != null) {
+                        imageViewPreview.setImageBitmap(video.getThumbnail());
+                    }
                     break;
                 case Deleted:
                     textViewStatus.setText(context.getString(R.string.deleted));
@@ -132,6 +141,13 @@ public class VideoRecyclerAdapter extends RecyclerView.Adapter<VideoRecyclerAdap
                 @Override
                 public void onClick(View v) {
                     onVideoClickListener.onDownloadClick(video);
+                }
+            });
+            topView.setOnLongClickListener(new View.OnLongClickListener() {
+                @Override
+                public boolean onLongClick(View v) {
+                    onVideoClickListener.onLongClick(video);
+                    return true;
                 }
             });
         }

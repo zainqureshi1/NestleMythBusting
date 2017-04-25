@@ -2,10 +2,12 @@ package com.e2esp.nestlemythbusting.activities;
 
 import android.Manifest;
 import android.app.ProgressDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Environment;
 import android.support.annotation.NonNull;
 import android.support.v4.widget.SwipeRefreshLayout;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
@@ -111,6 +113,11 @@ public class VideoListActivity extends AppCompatActivity {
             public void onDownloadClick(Video video) {
                 downloadClicked(video);
             }
+
+            @Override
+            public void onLongClick(Video video) {
+                videoLongClicked(video);
+            }
         });
         videosRecyclerView.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false));
         videosRecyclerView.addItemDecoration(new VerticalSpacingItemDecoration(Utility.dpToPx(this, 20)));
@@ -158,6 +165,7 @@ public class VideoListActivity extends AppCompatActivity {
         Collections.sort(videosArrayList, new Video.Comparator());
         videoRecyclerAdapter.notifyDataSetChanged();
         updateVideosCount();
+        checkForUpdates();
     }
 
     private Video createOfflineVideo(String videoName, String description) {
@@ -236,6 +244,7 @@ public class VideoListActivity extends AppCompatActivity {
                         videoRecyclerAdapter.notifyDataSetChanged();
                         updateVideosCount();
                         downloadDescriptions();
+                        checkForUpdates();
                         return;
                     }
                 }
@@ -267,21 +276,103 @@ public class VideoListActivity extends AppCompatActivity {
 
         if (!PermissionManager.getInstance().hasPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE)) {
             status = Video.Status.NotDownloaded;
-        } else if (status == Video.Status.Downloading) {
-            status = Video.Status.Incomplete;
-        } else if (status == Video.Status.Downloaded) {
+        } else {
             File brandFolder = getBrandFolder();
             if (brandFolder != null) {
                 File videoFile = new File(brandFolder, fileName);
                 if (!videoFile.exists()) {
-                    status = Video.Status.Deleted;
+                    if (status != Video.Status.NotDownloaded) {
+                        status = Video.Status.Deleted;
+                    }
+                } else {
+                    if (status == Video.Status.Downloading) {
+                        status = Video.Status.Incomplete;
+                    } else if (status != Video.Status.Incomplete && status != Video.Status.Outdated) {
+                        status = Video.Status.Downloaded;
+                    }
                 }
-            } else {
+            } else if (status != Video.Status.NotDownloaded) {
                 status = Video.Status.Deleted;
             }
         }
 
         return status;
+    }
+
+    private void checkForUpdates() {
+        if (!PermissionManager.getInstance().hasPermission(this,
+                Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
+            return;
+        }
+        if (!Utility.isInternetConnected(this, false)) {
+            return;
+        }
+
+        boolean hasDownloads = false;
+        for (int i = 0; i < videosArrayList.size(); i++) {
+            Video.Status status = videosArrayList.get(i).getStatus();
+            if (status == Video.Status.Downloaded || status == Video.Status.Incomplete) {
+                hasDownloads = true;
+                break;
+            }
+        }
+        if (!hasDownloads) {
+            return;
+        }
+
+        ListFolderTask listFolderForUpdatesTask = new ListFolderTask(DropboxClientFactory.getClient(), new ListFolderTask.Callback() {
+            @Override
+            public void onDataLoaded(ListFolderResult result) {
+                if (result != null) {
+                    List<Metadata> entities = result.getEntries();
+                    if (entities != null) {
+                        boolean needsUpdate = false;
+                        for (int i = 0; i < entities.size(); i++) {
+                            Metadata entity = entities.get(i);
+                            if (entity instanceof FileMetadata) {
+                                if (!isTextFile(entity.getName())) {
+                                    if (checkIfNeedsUpdate(entity.getName(), ((FileMetadata) entity).getSize())) {
+                                        needsUpdate = true;
+                                    }
+                                }
+                            }
+                        }
+                        if (needsUpdate) {
+                            videoRecyclerAdapter.notifyDataSetChanged();
+                        }
+                    }
+                }
+            }
+            @Override
+            public void onError(Exception e) {
+                Log.e(TAG, "Failed to list folder for updates.", e);
+            }
+        });
+        listFolderForUpdatesTask.execute(brand.getPath());
+    }
+
+    private boolean checkIfNeedsUpdate(String videoName, long updatedSize) {
+        for (int i = 0; i < videosArrayList.size(); i++) {
+            Video video = videosArrayList.get(i);
+            if (video.getTitle().equals(videoName)) {
+                if (video.getStatus() == Video.Status.Downloaded || video.getStatus() == Video.Status.Incomplete) {
+                    File videoFile = getVideoFile(video.getTitle());
+                    long fileLength = videoFile.length();
+                    if (video.getStatus() == Video.Status.Downloaded) {
+                        if (fileLength != updatedSize) {
+                            updateVideoStatus(video, Video.Status.Outdated);
+                            return true;
+                        }
+                    } else {
+                        if (fileLength > updatedSize) {
+                            updateVideoStatus(video, Video.Status.Outdated);
+                            return true;
+                        }
+                    }
+                }
+            }
+        }
+        return false;
     }
 
     private File getBrandFolder() {
@@ -318,6 +409,7 @@ public class VideoListActivity extends AppCompatActivity {
         int toastStringRes = -1;
         switch (video.getStatus()) {
             case Downloaded:
+            case Outdated:
                 Intent intent = new Intent(this, PlayerActivity.class);
                 intent.putExtra(Consts.Extras.BRAND, brand);
                 intent.putExtra(Consts.Extras.VIDEO, video);
@@ -357,13 +449,51 @@ public class VideoListActivity extends AppCompatActivity {
         });
     }
 
+    private void videoLongClicked(final Video video) {
+        CharSequence[] buttonTitles;
+        Video.Status status = video.getStatus();
+        if (status != Video.Status.NotDownloaded && status != Video.Status.Deleted) {
+            buttonTitles = new CharSequence[]{getString(R.string.delete), getString(R.string.download_again), getString(R.string.cancel)};
+        } else {
+            buttonTitles = new CharSequence[]{getString(R.string.download), getString(R.string.cancel)};
+        }
+        final int buttonCount = buttonTitles.length;
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle(video.getTitleWithoutExt());
+        builder.setItems(buttonTitles,
+                new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.dismiss();
+                        which += (3 - buttonCount);
+                        switch (which) {
+                            case 0:
+                                try {
+                                    getVideoFile(video.getTitle()).delete();
+                                } catch (Exception ex) {
+                                    ex.printStackTrace();
+                                }
+                                updateVideoStatus(video, Video.Status.Deleted);
+                                videoRecyclerAdapter.notifyDataSetChanged();
+                                break;
+                            case 1:
+                                downloadVideo(video);
+                                break;
+                            case 2:
+                                break;
+                        }
+                    }
+                });
+        builder.create().show();
+    }
+
     private void downloadVideo(Video videoToDownload) {
         progressDialogDownload.setProgress(0);
         progressDialogDownload.setMax(100);
         progressDialogDownload.show();
 
-        if (listFolderTask != null) {
-            listFolderTask.cancel(true);
+        if (downloadVideoTask != null) {
+            downloadVideoTask.cancel(true);
         }
 
         File brandFolder = getVideoFile(videoToDownload.getTitle());
@@ -424,7 +554,8 @@ public class VideoListActivity extends AppCompatActivity {
         int total = videosArrayList.size();
         int downloaded = 0;
         for (int i = 0; i < total; i++) {
-            if (videosArrayList.get(i).getStatus() == Video.Status.Downloaded) {
+            Video.Status status = videosArrayList.get(i).getStatus();
+            if (status == Video.Status.Downloaded || status == Video.Status.Outdated) {
                 downloaded++;
             }
         }

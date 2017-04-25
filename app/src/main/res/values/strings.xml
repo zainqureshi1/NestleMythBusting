@@ -18,10 +18,14 @@
     <string name="video_description">Video Description</string>
 
     <string name="incomplete">Incomplete</string>
+    <string name="outdated">Outdated</string>
     <string name="deleted">Deleted</string>
 
     <string name="download">Download</string>
     <string name="download_again">Download Again</string>
+    <string name="update">Update</string>
+    <string name="delete">Delete</string>
+    <string name="cancel">Cancel</string>
 
     <string name="download_video_first">Please download video first</string>
     <string name="wait_for_download_completion">Please wait for download to complete</string>
