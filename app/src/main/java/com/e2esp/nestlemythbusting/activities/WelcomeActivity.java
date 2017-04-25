@@ -11,8 +11,10 @@ import android.view.Window;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.crashlytics.android.Crashlytics;
 import com.e2esp.nestlemythbusting.R;
 import com.e2esp.nestlemythbusting.utils.Utility;
+import io.fabric.sdk.android.Fabric;
 
 /**
  * Created by Zain on 3/22/2017.
@@ -23,6 +25,7 @@ public class WelcomeActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        Fabric.with(this, new Crashlytics());
         getWindow().requestFeature(Window.FEATURE_NO_TITLE);
         setContentView(R.layout.activity_welcome);
 
