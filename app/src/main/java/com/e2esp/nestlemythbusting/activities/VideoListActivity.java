@@ -488,6 +488,10 @@ public class VideoListActivity extends AppCompatActivity {
     }
 
     private void downloadVideo(Video videoToDownload) {
+        if (!Utility.isInternetConnected(this, true)) {
+            return;
+        }
+
         progressDialogDownload.setProgress(0);
         progressDialogDownload.setMax(100);
         progressDialogDownload.show();

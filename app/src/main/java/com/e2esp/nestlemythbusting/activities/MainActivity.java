@@ -188,17 +188,17 @@ public class MainActivity extends AppCompatActivity {
         textViewSwipeHint.setVisibility(View.GONE);
         brandArrayList.clear();
 
-        brandArrayList.add(new Brand("Nestlé BUNYAD", R.drawable.nestle_bunyad));
-        brandArrayList.add(new Brand("Nestlé EVERYDAY", R.drawable.nestle_everyday));
-        brandArrayList.add(new Brand("Nestlé JUICES", R.drawable.nestle_juices));
-        brandArrayList.add(new Brand("Nestlé MAGGI", R.drawable.nestle_maggi));
-        brandArrayList.add(new Brand("Nestlé MILKPAK", R.drawable.nestle_milkpak));
-        brandArrayList.add(new Brand("Nestlé MILKPAK YOGURT", R.drawable.nestle_milkpak_yogurt));
-        brandArrayList.add(new Brand("Nestlé NESCAFÉ", R.drawable.nestle_nescafe));
-        brandArrayList.add(new Brand("Nestlé NIDO FORTIGROW", R.drawable.nestle_nido_fortigrow));
-        brandArrayList.add(new Brand("Nestlé NIDO GUMS", R.drawable.nestle_nido_gums));
-        brandArrayList.add(new Brand("Nestlé PURE LIFE", R.drawable.nestle_pure_life));
-        brandArrayList.add(new Brand("Nestlé Corporate", R.drawable.nestle_corporate));
+        brandArrayList.add(new Brand("NESTLÉ BUNYAD", R.drawable.nestle_bunyad));
+        brandArrayList.add(new Brand("NESTLÉ EVERYDAY", R.drawable.nestle_everyday));
+        brandArrayList.add(new Brand("NESTLÉ JUICES", R.drawable.nestle_juices));
+        brandArrayList.add(new Brand("NESTLÉ MAGGI", R.drawable.nestle_maggi));
+        brandArrayList.add(new Brand("NESTLÉ MILKPAK", R.drawable.nestle_milkpak));
+        brandArrayList.add(new Brand("NESTLÉ MILKPAK YOGURT", R.drawable.nestle_milkpak_yogurt));
+        brandArrayList.add(new Brand("NESTLÉ NESCAFÉ", R.drawable.nestle_nescafe));
+        brandArrayList.add(new Brand("NESTLÉ NIDO FORTIGROW", R.drawable.nestle_nido_fortigrow));
+        brandArrayList.add(new Brand("NESTLÉ NIDO GUMS", R.drawable.nestle_nido_gums));
+        brandArrayList.add(new Brand("NESTLÉ PURE LIFE", R.drawable.nestle_pure_life));
+        brandArrayList.add(new Brand("NESTLÉ Corporate", R.drawable.nestle_corporate));
 
         textViewDescription.setVisibility(View.VISIBLE);
         Collections.sort(brandArrayList, new Brand.Comparator());

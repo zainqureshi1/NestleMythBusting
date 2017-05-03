@@ -1,8 +1,8 @@
 <resources>
     <string name="app_name">Myth Busting</string>
 
-    <string name="dropbox_app_key">6xr9uc9cluxz5mv</string>
-    <string name="dropbox_access_token">TDUoYFNV4GAAAAAAAAAACMIwjN5uxcD_WEDo57tgxYCaxgl0VpXUo4quYoLgNWj9</string>
+    <string name="dropbox_app_key">skm94m6vye66wah</string>
+    <string name="dropbox_access_token">pglCU79a_jAAAAAAAAAACJDHi0hynWvJnOAXuHqqlMpTz3zfzXkarLJvcU5PTt_-</string>
 
     <string name="welcome_text">This application aims to connect with consumers around their queries and concerns about our brands, with easy to use video responses.</string>
 
