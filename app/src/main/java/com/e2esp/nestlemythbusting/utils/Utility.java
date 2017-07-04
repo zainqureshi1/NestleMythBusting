@@ -7,6 +7,8 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.preference.PreferenceManager;
 import android.util.TypedValue;
+import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Toast;
 
 import com.e2esp.nestlemythbusting.R;
@@ -50,6 +52,13 @@ public class Utility {
         float value = (float)(bytes / Math.pow(1024, exp));
         String unit = "KMGT".charAt(exp-1)+"B";
         return String.format("%.1f", value)+unit;
+    }
+
+    public static void hideKeyboard(Context context, View view) {
+        if (view != null) {
+            InputMethodManager imm = (InputMethodManager) context.getSystemService(Context.INPUT_METHOD_SERVICE);
+            imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
+        }
     }
 
     public static class Prefs {

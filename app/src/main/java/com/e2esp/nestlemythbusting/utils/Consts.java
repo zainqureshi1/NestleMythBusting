@@ -20,4 +20,5 @@ public class Consts {
         public static final String DOWNLOADED_VIDEOS = "_DOWNLOADED_VIDEOS";
     }
 
+    public static String FAQFilePath = "/FAQ.txt";
 }

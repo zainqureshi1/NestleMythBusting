@@ -22,7 +22,7 @@
         android:id="@+id/swipeRefreshLayout"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_centerInParent="true" >
+        android:layout_above="@+id/linearLayoutFAQ" >
 
         <android.support.v7.widget.RecyclerView
             android:id="@+id/recyclerViewVideos"
@@ -32,5 +32,44 @@
             android:layout_marginBottom="@dimen/margin_medium" />
 
     </android.support.v4.widget.SwipeRefreshLayout>
+
+    <LinearLayout
+        android:id="@+id/linearLayoutFAQ"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:padding="@dimen/margin_small"
+        android:background="@color/white"
+        android:orientation="vertical" >
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/questions_asked_by_customers"
+            android:textColor="@color/black"
+            android:textSize="@dimen/text_size_small" />
+
+        <android.support.v7.widget.AppCompatEditText
+            android:id="@+id/editTextFAQ"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/margin_tiny"
+            android:layout_marginBottom="@dimen/margin_tiny"
+            android:maxLines="3"
+            android:textColor="@color/black"
+            android:textSize="@dimen/text_size_small_upper"
+            android:inputType="textCapSentences|textMultiLine" />
+
+        <android.support.v7.widget.AppCompatButton
+            android:id="@+id/buttonSubmit"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="right"
+            android:text="@string/submit"
+            android:textColor="@color/white"
+            android:textSize="@dimen/text_size_small"
+            android:background="@drawable/button_green_with_gradient" />
+
+    </LinearLayout>
 
 </RelativeLayout>

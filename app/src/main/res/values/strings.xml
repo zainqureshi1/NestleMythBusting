@@ -31,11 +31,16 @@
     <string name="wait_for_download_completion">Please wait for download to complete</string>
     <string name="download_video_again">Please download video again</string>
 
+    <string name="questions_asked_by_customers">Any questions asked by the Customers should be entered below</string>
+    <string name="submit">SUBMIT</string>
+
     <string name="connect_to_internet">Connect to internet and try again</string>
     <string name="unable_to_get_brands">Unable to get Brands. Please try again.</string>
     <string name="unable_to_get_videos">Unable to get Videos. Please try again.</string>
     <string name="cannot_download_video_permission_denied">Can\'t download video: write access denied.</string>
+    <string name="cannot_download_questions_permission_denied">Can\'t download questions: write access denied.</string>
     <string name="grant_storage_permission">Please grant storage permission to complete action.</string>
+    <string name="type_question_first">Type the question first</string>
 
     <string name="press_back_again_to_exit">Press BACK again to exit</string>
     <string name="press_back_again_to_close">Press BACK again to close</string>
