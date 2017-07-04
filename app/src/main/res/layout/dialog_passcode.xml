@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content" android:layout_height="wrap_content"
+    android:padding="@dimen/margin_small" android:gravity="center"
+    android:background="@color/white" android:orientation="vertical" >
+
+    <TextView
+        android:id="@+id/textViewPasscodeRequired"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/passcode_required"
+        android:textColor="@color/colorLogo"
+        android:textSize="@dimen/text_size_medium" />
+
+    <TextView
+        android:id="@+id/textViewPasscodeExplanation"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/passcode_explanation"
+        android:textColor="@color/colorLogo"
+        android:textSize="@dimen/text_size_small" />
+
+    <android.support.v7.widget.AppCompatEditText
+        android:id="@+id/editTextPasscode"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="@dimen/margin_small"
+        android:gravity="center"
+        android:textColor="@color/black"
+        android:hint="@string/enter_passcode_here"
+        android:inputType="numberPassword"
+        android:lines="1"
+        android:minEms="4"
+        android:maxLength="10" />
+
+    <android.support.v7.widget.AppCompatButton
+        android:id="@+id/buttonPasscodeContinue"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:paddingLeft="@dimen/margin_large"
+        android:paddingRight="@dimen/margin_large"
+        android:layout_marginTop="@dimen/margin_small"
+        android:text="@string/_continue"
+        android:textColor="@color/colorLogo"
+        android:textSize="@dimen/text_size_medium"
+        android:textStyle="bold"
+        android:background="@drawable/button_with_gradient" />
+
+</LinearLayout>

@@ -32,7 +32,7 @@
         android:textColor="@color/colorLogo" />
 
     <android.support.v7.widget.AppCompatButton
-        android:id="@+id/buttonLetsBegin"
+        android:id="@+id/buttonAccessApp"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:paddingLeft="@dimen/margin_large"

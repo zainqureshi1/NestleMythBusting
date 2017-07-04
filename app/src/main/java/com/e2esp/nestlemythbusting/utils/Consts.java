@@ -16,9 +16,13 @@ public class Consts {
     }
 
     public static class Keys {
+        public static final String APP_ACCESS = "APP_ACCESS";
         public static final String STATUS = "_STATUS";
         public static final String DOWNLOADED_VIDEOS = "_DOWNLOADED_VIDEOS";
     }
 
     public static String FAQFilePath = "/FAQ.txt";
+
+    public static String AppPassCode = "637853";
+
 }

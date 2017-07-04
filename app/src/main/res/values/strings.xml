@@ -8,6 +8,13 @@
 
     <string name="access_app">ACCESS APP</string>
 
+    <string name="passcode_required">PASSCODE REQUIRED</string>
+    <string name="passcode_explanation">To access the app you need to provide one time pass code</string>
+    <string name="enter_passcode_here">Enter Passcode Here</string>
+    <string name="_continue">Continue</string>
+
+    <string name="invalid_code">Invalid Code</string>
+
     <string name="description_above_brands">For any queries related to a specific brand click on the logos below</string>
 
     <string name="swipe_to_reload">SWIPE TO RELOAD</string>
