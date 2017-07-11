@@ -22,10 +22,10 @@ import com.e2esp.nestlemythbusting.adapters.BrandRecyclerAdapter;
 import com.e2esp.nestlemythbusting.callbacks.OnBrandClickListener;
 import com.e2esp.nestlemythbusting.models.Brand;
 import com.e2esp.nestlemythbusting.utils.Consts;
-import com.e2esp.nestlemythbusting.utils.DropboxClientFactory;
-import com.e2esp.nestlemythbusting.utils.ListFolderTask;
-import com.e2esp.nestlemythbusting.utils.OfflineDataLoader;
-import com.e2esp.nestlemythbusting.utils.PicassoClient;
+import com.e2esp.nestlemythbusting.helpers.DropboxClientFactory;
+import com.e2esp.nestlemythbusting.tasks.ListFolderTask;
+import com.e2esp.nestlemythbusting.helpers.OfflineDataLoader;
+import com.e2esp.nestlemythbusting.helpers.PicassoClient;
 import com.e2esp.nestlemythbusting.utils.Utility;
 import com.e2esp.nestlemythbusting.utils.VerticalSpacingItemDecoration;
 
@@ -98,8 +98,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void setupDropbox() {
-        DropboxClientFactory.init(getString(R.string.dropbox_access_token));
-        PicassoClient.init(getApplicationContext(), DropboxClientFactory.getClient());
+        PicassoClient.init(getApplicationContext(), DropboxClientFactory.getClient(this));
     }
 
     private void loadBrandFolders() {
@@ -126,7 +125,7 @@ public class MainActivity extends AppCompatActivity {
             listFolderTask.cancel(true);
         }
 
-        listFolderTask = new ListFolderTask(DropboxClientFactory.getClient(), new ListFolderTask.Callback() {
+        listFolderTask = new ListFolderTask(DropboxClientFactory.getClient(this), new ListFolderTask.Callback() {
             @Override
             public void onDataLoaded(ListFolderResult result) {
                 swipeRefreshLayout.setRefreshing(false);

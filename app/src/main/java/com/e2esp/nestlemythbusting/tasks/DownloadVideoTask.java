@@ -1,4 +1,4 @@
-package com.e2esp.nestlemythbusting.utils;
+package com.e2esp.nestlemythbusting.tasks;
 
 import android.content.Context;
 import android.os.AsyncTask;
@@ -7,6 +7,7 @@ import com.dropbox.core.DbxDownloader;
 import com.dropbox.core.v2.DbxClientV2;
 import com.dropbox.core.v2.files.FileMetadata;
 import com.e2esp.nestlemythbusting.models.Video;
+import com.e2esp.nestlemythbusting.utils.ProgressOutputStream;
 
 import java.io.File;
 import java.io.FileOutputStream;

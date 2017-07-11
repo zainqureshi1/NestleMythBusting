@@ -6,6 +6,8 @@ import android.os.Parcel;
 import android.os.Parcelable;
 import android.provider.MediaStore;
 
+import com.e2esp.nestlemythbusting.utils.Utility;
+
 /**
  * Created by Zain on 3/22/2017.
  */
@@ -72,8 +74,7 @@ public class Video implements Parcelable {
 
     public Bitmap getThumbnail() {
         if (thumbnail == null && filePath != null) {
-            thumbnail = ThumbnailUtils.createVideoThumbnail(filePath,
-                    MediaStore.Images.Thumbnails.MINI_KIND);
+            thumbnail = Utility.createVideoThumbnail(filePath, 4);
         }
         return thumbnail;
     }

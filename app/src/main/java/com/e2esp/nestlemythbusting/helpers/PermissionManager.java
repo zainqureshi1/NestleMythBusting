@@ -1,4 +1,4 @@
-package com.e2esp.nestlemythbusting.utils;
+package com.e2esp.nestlemythbusting.helpers;
 
 import android.app.Activity;
 import android.content.DialogInterface;

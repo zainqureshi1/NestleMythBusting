@@ -4,7 +4,6 @@ import android.Manifest;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.os.Environment;
 import android.support.annotation.NonNull;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AlertDialog;
@@ -13,7 +12,6 @@ import android.os.Bundle;
 import android.support.v7.widget.AppCompatEditText;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -26,34 +24,27 @@ import com.e2esp.nestlemythbusting.R;
 import com.e2esp.nestlemythbusting.adapters.VideoRecyclerAdapter;
 import com.e2esp.nestlemythbusting.applications.NestleApplication;
 import com.e2esp.nestlemythbusting.callbacks.OnVideoClickListener;
+import com.e2esp.nestlemythbusting.helpers.FAQHandler;
+import com.e2esp.nestlemythbusting.helpers.FileLoader;
 import com.e2esp.nestlemythbusting.models.Brand;
 import com.e2esp.nestlemythbusting.models.Description;
 import com.e2esp.nestlemythbusting.models.Title;
 import com.e2esp.nestlemythbusting.models.Video;
 import com.e2esp.nestlemythbusting.utils.Consts;
-import com.e2esp.nestlemythbusting.utils.DownloadFileTask;
-import com.e2esp.nestlemythbusting.utils.DownloadVideoTask;
-import com.e2esp.nestlemythbusting.utils.DownloadDescriptionTask;
-import com.e2esp.nestlemythbusting.utils.DropboxClientFactory;
-import com.e2esp.nestlemythbusting.utils.ListFolderTask;
-import com.e2esp.nestlemythbusting.utils.OfflineDataLoader;
-import com.e2esp.nestlemythbusting.utils.PermissionManager;
-import com.e2esp.nestlemythbusting.utils.UploadFileTask;
+import com.e2esp.nestlemythbusting.tasks.DownloadVideoTask;
+import com.e2esp.nestlemythbusting.tasks.DownloadDescriptionTask;
+import com.e2esp.nestlemythbusting.helpers.DropboxClientFactory;
+import com.e2esp.nestlemythbusting.tasks.ListFolderTask;
+import com.e2esp.nestlemythbusting.helpers.OfflineDataLoader;
+import com.e2esp.nestlemythbusting.helpers.PermissionManager;
 import com.e2esp.nestlemythbusting.utils.Utility;
 import com.e2esp.nestlemythbusting.utils.VerticalSpacingItemDecoration;
 import com.google.android.gms.analytics.HitBuilders;
 import com.google.android.gms.analytics.Tracker;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileOutputStream;
-import java.io.FileReader;
-import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
@@ -63,12 +54,10 @@ public class VideoListActivity extends AppCompatActivity {
     private TextView textViewSwipeHint;
     private SwipeRefreshLayout swipeRefreshLayout;
 
-    private RecyclerView videosRecyclerView;
     private ArrayList<Video> videosArrayList;
     private VideoRecyclerAdapter videoRecyclerAdapter;
 
     private AppCompatEditText editTextFAQ;
-    private Button buttonSubmit;
 
     private ListFolderTask listFolderTask;
     private ProgressDialog progressDialogList;
@@ -77,9 +66,6 @@ public class VideoListActivity extends AppCompatActivity {
     private ProgressDialog progressDialogDownload;
 
     private ArrayList<DownloadDescriptionTask> descriptionTasks;
-    private DownloadFileTask downloadFAQTask;
-    private UploadFileTask uploadFAQTask;
-    private ProgressDialog progressDialogSubmitQuestion;
 
     private Brand brand;
 
@@ -120,7 +106,7 @@ public class VideoListActivity extends AppCompatActivity {
         });
         swipeRefreshLayout.setEnabled(false);
 
-        videosRecyclerView = (RecyclerView) findViewById(R.id.recyclerViewVideos);
+        RecyclerView videosRecyclerView = (RecyclerView) findViewById(R.id.recyclerViewVideos);
         videosArrayList = new ArrayList<>();
         videoRecyclerAdapter = new VideoRecyclerAdapter(this, videosArrayList, new OnVideoClickListener() {
             @Override
@@ -142,7 +128,7 @@ public class VideoListActivity extends AppCompatActivity {
         videosRecyclerView.setAdapter(videoRecyclerAdapter);
 
         editTextFAQ = (AppCompatEditText) findViewById(R.id.editTextFAQ);
-        buttonSubmit = (Button) findViewById(R.id.buttonSubmit);
+        Button buttonSubmit = (Button) findViewById(R.id.buttonSubmit);
         buttonSubmit.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -160,11 +146,6 @@ public class VideoListActivity extends AppCompatActivity {
         progressDialogDownload.setCancelable(false);
         progressDialogDownload.setMessage("Downloading Video");
         progressDialogDownload.setProgressNumberFormat("");
-
-        progressDialogSubmitQuestion = new ProgressDialog(this);
-        progressDialogSubmitQuestion.setProgressStyle(ProgressDialog.STYLE_SPINNER);
-        progressDialogSubmitQuestion.setCancelable(false);
-        progressDialogSubmitQuestion.setMessage("Submitting Question");
     }
 
     private void startOfflineLoading() {
@@ -241,7 +222,7 @@ public class VideoListActivity extends AppCompatActivity {
             listFolderTask.cancel(true);
         }
 
-        listFolderTask = new ListFolderTask(DropboxClientFactory.getClient(), new ListFolderTask.Callback() {
+        listFolderTask = new ListFolderTask(DropboxClientFactory.getClient(this), new ListFolderTask.Callback() {
             @Override
             public void onDataLoaded(ListFolderResult result) {
                 swipeRefreshLayout.setRefreshing(false);
@@ -309,7 +290,7 @@ public class VideoListActivity extends AppCompatActivity {
         if (!PermissionManager.getInstance().hasPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE)) {
             status = Video.Status.NotDownloaded;
         } else {
-            File brandFolder = getBrandFolder();
+            File brandFolder = FileLoader.getBrandFolder(this, brand);
             if (brandFolder != null) {
                 File videoFile = new File(brandFolder, fileName);
                 if (!videoFile.exists()) {
@@ -352,7 +333,7 @@ public class VideoListActivity extends AppCompatActivity {
             return;
         }
 
-        ListFolderTask listFolderForUpdatesTask = new ListFolderTask(DropboxClientFactory.getClient(), new ListFolderTask.Callback() {
+        ListFolderTask listFolderForUpdatesTask = new ListFolderTask(DropboxClientFactory.getClient(this), new ListFolderTask.Callback() {
             @Override
             public void onDataLoaded(ListFolderResult result) {
                 if (result != null) {
@@ -407,53 +388,11 @@ public class VideoListActivity extends AppCompatActivity {
         return false;
     }
 
-    private File getAppFolder() {
-        try {
-            File appFolder = new File(Environment.getExternalStorageDirectory(), getString(R.string.app_name));
-            if (!appFolder.exists() || !appFolder.isDirectory()) {
-                if (!appFolder.mkdir()) {
-                    return null;
-                }
-            }
-            return appFolder;
-        } catch (Exception ex) {
-            ex.printStackTrace();
-        }
-        return null;
-    }
-
-    private File getBrandFolder() {
-        try {
-            File appFolder = getAppFolder();
-            if (appFolder != null) {
-                File brandFolder = new File(appFolder, brand.getName());
-                if (!brandFolder.exists() || !brandFolder.isDirectory()) {
-                    if (!brandFolder.mkdir()) {
-                        return null;
-                    }
-                }
-                return brandFolder;
-            }
-        } catch (Exception ex) {
-            ex.printStackTrace();
-        }
-        return null;
-    }
-
     private File getVideoFile(String videoName) {
-        File brandFolder = getBrandFolder();
+        File brandFolder = FileLoader.getBrandFolder(this, brand);
         if (brandFolder != null) {
             File videoFile = new File(brandFolder, videoName);
             return videoFile;
-        }
-        return null;
-    }
-
-    private File getFAQFile() {
-        File appFolder = getAppFolder();
-        if (appFolder != null) {
-            File faqFile = new File(appFolder, "FAQ.txt");
-            return faqFile;
         }
         return null;
     }
@@ -554,7 +493,7 @@ public class VideoListActivity extends AppCompatActivity {
         }
 
         File videoFile = getVideoFile(videoToDownload.getTitle());
-        downloadVideoTask = new DownloadVideoTask(this, DropboxClientFactory.getClient(), videoFile, videoToDownload, new DownloadVideoTask.Callback() {
+        downloadVideoTask = new DownloadVideoTask(this, DropboxClientFactory.getClient(this), videoFile, videoToDownload, new DownloadVideoTask.Callback() {
             @Override
             public void onDownloadStart(Video video) {
                 updateVideoStatus(video, Video.Status.Downloading);
@@ -627,7 +566,7 @@ public class VideoListActivity extends AppCompatActivity {
         for (int i = 0; i < videosArrayList.size(); i++) {
             Description description = videosArrayList.get(i).getDescription();
             if (description != null) {
-                DownloadDescriptionTask downloadDescriptionTask = new DownloadDescriptionTask(DropboxClientFactory.getClient(), description, new DownloadDescriptionTask.Callback() {
+                DownloadDescriptionTask downloadDescriptionTask = new DownloadDescriptionTask(DropboxClientFactory.getClient(this), description, new DownloadDescriptionTask.Callback() {
                     public void onDownloadComplete(Description description, String result) {
                         description.setDescription(result);
                         descriptionsToDownload--;
@@ -673,10 +612,10 @@ public class VideoListActivity extends AppCompatActivity {
         }
         Utility.hideKeyboard(this, editTextFAQ);
 
-        startFAQLoading();
+        startSavingFAQ();
     }
 
-    private void startFAQLoading() {
+    private void startSavingFAQ() {
         PermissionManager.getInstance().checkPermissionRequest(this,
                 Manifest.permission.WRITE_EXTERNAL_STORAGE,
                 Consts.RequestCodes.PERMISSION_STORAGE,
@@ -684,7 +623,8 @@ public class VideoListActivity extends AppCompatActivity {
                 new PermissionManager.Callback() {
                     @Override
                     public void onGranted() {
-                        downloadFAQ();
+                        FAQHandler.getInstance(VideoListActivity.this).saveFAQ(brand, editTextFAQ.getText().toString());
+                        editTextFAQ.setText("");
                     }
                     @Override
                     public void onDenied() {
@@ -692,171 +632,6 @@ public class VideoListActivity extends AppCompatActivity {
                                 + " " + getString(R.string.grant_storage_permission));
                     }
                 });
-    }
-
-    private void downloadFAQ() {
-        if (!Utility.isInternetConnected(this, true)) {
-            return;
-        }
-
-        progressDialogSubmitQuestion.setMessage("Loading FAQ");
-        progressDialogSubmitQuestion.show();
-
-        if (downloadFAQTask != null) {
-            downloadFAQTask.cancel(true);
-        }
-
-        File faqFile = getFAQFile();
-        downloadFAQTask = new DownloadFileTask(this, DropboxClientFactory.getClient(), faqFile, Consts.FAQFilePath, new DownloadFileTask.Callback() {
-            @Override
-            public void onDownloadComplete(File result) {
-                addQuestionInFAQFile(result);
-            }
-            @Override
-            public void onError(Exception e) {
-                progressDialogSubmitQuestion.dismiss();
-                Utility.showToast(VideoListActivity.this, "Error: "+e.getMessage());
-            }
-        });
-        downloadFAQTask.execute();
-    }
-
-    private void addQuestionInFAQFile(File file) {
-        progressDialogSubmitQuestion.setMessage("Adding Question in FAQ");
-        progressDialogSubmitQuestion.show();
-
-        String faq = readFAQFile(file);
-        String brandMarker = ">-BRAND: ";
-        String questionMarker = "-QUESTION: ";
-        String dateTime = currentDateTimeString();
-        String selectedBrandName = brand.getName();
-        String newQuestion = editTextFAQ.getText().toString();
-        String selectedBrand = selectedBrandName;
-
-        // split selected brand questions from all questions
-        int brandIndex = -1;
-        String[] brands = faq.split(brandMarker);
-        for (int i = 0; i < brands.length; i++) {
-            if (brands[i].startsWith(selectedBrandName)) {
-                selectedBrand = brands[i];
-                brandIndex = i;
-                break;
-            }
-        }
-
-        // remove previous last update time and add new time
-        int index1 = selectedBrand.indexOf('(');
-        int index2 = selectedBrand.indexOf(')');
-        String newLastUpdate = "(last update: "+dateTime+")";
-        if (index1 >= 0 && index2 > 0 & index1 < index2) {
-            String toRemove = selectedBrand.substring(index1, index2+1);
-            selectedBrand = selectedBrand.replace(toRemove, newLastUpdate);
-        } else {
-            String lastSegment = (selectedBrand.length() > selectedBrandName.length()+1) ? selectedBrand.substring(selectedBrandName.length()+1) : "";
-            selectedBrand = selectedBrandName + " " + newLastUpdate + lastSegment;
-        }
-
-        // add new question and rejoin all questions
-        selectedBrand += "\n" + questionMarker + newQuestion;
-        selectedBrand += " <" + dateTime + ">";
-        if (brandIndex >= 0) {
-            brands[brandIndex] = selectedBrand;
-        }
-        String newFAQ = "";
-        for (int i = 0; i < brands.length; i++) {
-            if (i > 0) {
-                newFAQ += brandMarker;
-            }
-            newFAQ += brands[i];
-        }
-        if (brandIndex < 0) {
-            if (!newFAQ.isEmpty()) {
-                newFAQ += "\n\n\n";
-            }
-            newFAQ += brandMarker + selectedBrand;
-        }
-
-        // write questions to file
-        if (writeToFAQFile(newFAQ, file)) {
-            // upload file
-            uploadFAQ(file);
-        }
-    }
-
-    private String readFAQFile(File file) {
-        StringBuilder stringBuilder = new StringBuilder();
-        try {
-            BufferedReader bufferedReader = new BufferedReader(new FileReader(file));
-            String line;
-            while ((line = bufferedReader.readLine()) != null) {
-                stringBuilder.append(line);
-                stringBuilder.append('\n');
-            }
-            bufferedReader.close();
-        }
-        catch (IOException e) {
-            e.printStackTrace();
-        }
-        return stringBuilder.toString();
-    }
-
-    private boolean writeToFAQFile(String faq, File file) {
-        FileOutputStream fileOutputStream = null;
-        OutputStreamWriter outputStreamWriter = null;
-        try {
-            fileOutputStream = new FileOutputStream(file);
-            outputStreamWriter = new OutputStreamWriter(fileOutputStream);
-            outputStreamWriter.write(faq);
-            return true;
-        } catch (Exception ex) {
-            ex.printStackTrace();
-        } finally {
-            try {
-                if (outputStreamWriter != null) {
-                    outputStreamWriter.close();
-                }
-                if (fileOutputStream != null) {
-                    fileOutputStream.flush();
-                    fileOutputStream.close();
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-        return false;
-    }
-
-    private void uploadFAQ(File file) {
-        progressDialogSubmitQuestion.setMessage("Uploading Updated FAQ");
-        progressDialogSubmitQuestion.show();
-
-        if (uploadFAQTask != null) {
-            uploadFAQTask.cancel(true);
-        }
-        uploadFAQTask = new UploadFileTask(this, DropboxClientFactory.getClient(), file, Consts.FAQFilePath, new UploadFileTask.Callback() {
-            @Override
-            public void onUploadComplete(FileMetadata result) {
-                progressDialogSubmitQuestion.dismiss();
-                Utility.showToast(VideoListActivity.this, "Successfully submitted question");
-                editTextFAQ.setText("");
-            }
-            @Override
-            public void onError(Exception e) {
-                progressDialogSubmitQuestion.dismiss();
-                Utility.showToast(VideoListActivity.this, "Error: "+e.getMessage());
-            }
-        });
-        uploadFAQTask.execute();
-    }
-
-    private String currentDateTimeString() {
-        try {
-            SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd/MM/yyyy hh:mma");
-            return simpleDateFormat.format(new Date());
-        } catch (Exception ex) {
-            ex.printStackTrace();
-        }
-        return "";
     }
 
     @Override

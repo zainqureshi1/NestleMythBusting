@@ -2,16 +2,22 @@ package com.e2esp.nestlemythbusting.utils;
 
 import android.content.Context;
 import android.content.res.Resources;
+import android.graphics.Bitmap;
 import android.graphics.Typeface;
+import android.media.MediaMetadataRetriever;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.preference.PreferenceManager;
+import android.provider.MediaStore;
 import android.util.TypedValue;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Toast;
 
 import com.e2esp.nestlemythbusting.R;
+
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 /**
  * Created by Zain on 3/22/2017.
@@ -46,6 +52,16 @@ public class Utility {
         Toast.makeText(context, text, Toast.LENGTH_SHORT).show();
     }
 
+    public static String currentDateTimeString() {
+        try {
+            SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd/MM/yyyy hh:mma");
+            return simpleDateFormat.format(new Date());
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+        return "";
+    }
+
     public static String bytesString(long bytes) {
         if (bytes < 1024) return bytes + "B";
         int exp = (int) (Math.log(bytes) / Math.log(1024));
@@ -59,6 +75,39 @@ public class Utility {
             InputMethodManager imm = (InputMethodManager) context.getSystemService(Context.INPUT_METHOD_SERVICE);
             imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
         }
+    }
+
+    public static Bitmap createVideoThumbnail(String filePath, int second) {
+        Bitmap bitmap = null;
+        MediaMetadataRetriever retriever = new MediaMetadataRetriever();
+        try {
+            retriever.setDataSource(filePath);
+            bitmap = retriever.getFrameAtTime(second * 1000 * 1000);
+        } catch (IllegalArgumentException ex) {
+            // Assume this is a corrupt video file
+        } catch (RuntimeException ex) {
+            // Assume this is a corrupt video file.
+        } finally {
+            try {
+                retriever.release();
+            } catch (RuntimeException ex) {
+                // Ignore failures while cleaning up.
+            }
+        }
+
+        if (bitmap == null) return null;
+
+        // Scale down the bitmap if it's too large.
+        int width = bitmap.getWidth();
+        int height = bitmap.getHeight();
+        int max = Math.max(width, height);
+        if (max > 512) {
+            float scale = 512f / max;
+            int w = Math.round(scale * width);
+            int h = Math.round(scale * height);
+            bitmap = Bitmap.createScaledBitmap(bitmap, w, h, true);
+        }
+        return bitmap;
     }
 
     public static class Prefs {

@@ -13,7 +13,7 @@ import android.widget.TextView;
 import com.e2esp.nestlemythbusting.R;
 import com.e2esp.nestlemythbusting.callbacks.OnBrandClickListener;
 import com.e2esp.nestlemythbusting.models.Brand;
-import com.e2esp.nestlemythbusting.utils.FileThumbnailRequestHandler;
+import com.e2esp.nestlemythbusting.tasks.FileThumbnailRequestHandler;
 import com.e2esp.nestlemythbusting.utils.Utility;
 import com.squareup.picasso.Callback;
 import com.squareup.picasso.Picasso;

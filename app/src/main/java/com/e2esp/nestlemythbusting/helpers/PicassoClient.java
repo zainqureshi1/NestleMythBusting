@@ -1,8 +1,9 @@
-package com.e2esp.nestlemythbusting.utils;
+package com.e2esp.nestlemythbusting.helpers;
 
 import android.content.Context;
 
 import com.dropbox.core.v2.DbxClientV2;
+import com.e2esp.nestlemythbusting.tasks.FileThumbnailRequestHandler;
 import com.squareup.picasso.OkHttpDownloader;
 import com.squareup.picasso.Picasso;
 
