@@ -25,9 +25,10 @@ public class OfflineDataLoader {
             case "NESTLÉ EVERYDAY":
                 //videoTitlesList.add(new Title("Safe for Consumption", "Is EVERYDAY Milk? If not, than is it safe for drinking/direct consumption?"));
                 break;
-            case "NESTLÉ JUICES":
+            case "NESTLÉ FRUITA VITALS":
                 //videoTitlesList.add(new Title("Juices vs Nectars", "Difference between Juices & Nectars"));
-                videoTitlesList.add(new Title("Quality assurance", "How do we ensure the quality of Fruitavitals?"));
+                videoTitlesList.add(new Title("Quality assurance", "How do we ensure the quality of NESTLÉ FRUITA VITALS?"));
+                videoTitlesList.add(new Title("Project TRUST Documentary", "Journey of Quality"));
                 break;
             case "NESTLÉ MAGGI":
                 videoTitlesList.add(new Title("MAGGI and health", "Is MAGGI healthy?"));
@@ -39,7 +40,7 @@ public class OfflineDataLoader {
                 //videoTitlesList.add(new Title("Long Shelf Life", "How does NESTLÉ MILKPAK have a such a long shelf life? Does it have any preservatives or chemicals?"));
                 break;
             case "NESTLÉ MILKPAK YOGURT":
-                videoTitlesList.add(new Title("UHT Milk or Pasteurized", "Is Yogurt made from UHT Milk or pasteurized milk?"));
+                videoTitlesList.add(new Title("UHT Milk or Pasteurized", "Is Yogurt made from UHT milk or pasteurized milk?"));
                 videoTitlesList.add(new Title("YOGURT Long Shelf Life", "How does yogurt have a long shelf life? Does Yogurt have any preservatives?"));
                 break;
             case "NESTLÉ NESCAFÉ":
@@ -54,7 +55,7 @@ public class OfflineDataLoader {
                 videoTitlesList.add(new Title("Pre Pro Biotics", "What are Pre/Pro Biotics and how do they effect the baby's system?"));
                 break;
             case "NESTLÉ PURE LIFE":
-                videoTitlesList.add(new Title("Plain water vs Mineral water", "Difference between plain water and Mineral water?"));
+                videoTitlesList.add(new Title("Plain water vs Mineral water", "Is there a difference between plain water and mineral water?"));
                 break;
         }
         return videoTitlesList;

@@ -38,7 +38,7 @@
     <string name="wait_for_download_completion">Please wait for download to complete</string>
     <string name="download_video_again">Please download video again</string>
 
-    <string name="questions_asked_by_customers">Any questions asked by the Customers should be entered below</string>
+    <string name="questions_asked_by_customers">Any consumer question not answered through this video can be submitted below</string>
     <string name="submit">SUBMIT</string>
 
     <string name="connect_to_internet">Connect to internet and try again</string>
