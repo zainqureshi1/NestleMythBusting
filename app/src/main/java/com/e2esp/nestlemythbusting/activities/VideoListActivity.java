@@ -28,7 +28,7 @@ import com.e2esp.nestlemythbusting.helpers.FAQHandler;
 import com.e2esp.nestlemythbusting.helpers.FileLoader;
 import com.e2esp.nestlemythbusting.models.Brand;
 import com.e2esp.nestlemythbusting.models.Description;
-import com.e2esp.nestlemythbusting.models.Title;
+import com.e2esp.nestlemythbusting.models.VideoTitle;
 import com.e2esp.nestlemythbusting.models.Video;
 import com.e2esp.nestlemythbusting.utils.Consts;
 import com.e2esp.nestlemythbusting.tasks.DownloadVideoTask;
@@ -170,20 +170,23 @@ public class VideoListActivity extends AppCompatActivity {
         textViewSwipeHint.setVisibility(View.GONE);
         videosArrayList.clear();
 
-        ArrayList<Title> titlesList = OfflineDataLoader.videoTitlesList(brand.getName());
-        for (Title title: titlesList) {
-            videosArrayList.add(createOfflineVideo(title.getTitle(), title.getDescription()));
+        ArrayList<VideoTitle> titlesList = OfflineDataLoader.videoTitlesList(brand.getName());
+        for (VideoTitle videoTitle : titlesList) {
+            videosArrayList.add(createOfflineVideo(videoTitle.getTitle(), videoTitle.getDescription()));
         }
 
         Collections.sort(videosArrayList, new Video.Comparator());
         videoRecyclerAdapter.notifyDataSetChanged();
-        updateVideosCount();
         checkForUpdates();
     }
 
     private Video createOfflineVideo(String videoName, String description) {
         String brandPath = "/" + brand.getName().toLowerCase() + "/";
-        return new Video(videoName+".mp4", brandPath+videoName.toLowerCase()+".mp4", getVideoFile(videoName+".mp4").getAbsolutePath(), getVideoStatus(videoName+".mp4"), new Description(videoName+".txt", brandPath+videoName.toLowerCase()+".txt", description));
+        String path = brandPath+videoName.toLowerCase();
+        String filePath = getVideoFile(videoName+".mp4").getAbsolutePath();
+        Video.Status status = FileLoader.getVideoStatus(this, brand.getName(), videoName+".mp4");
+        Description videoDescription = new Description(videoName+".txt", path+".txt", description);
+        return new Video(videoName+".mp4", path+".mp4", filePath, status, videoDescription);
     }
 
     private void startFilesLoading() {
@@ -238,7 +241,7 @@ public class VideoListActivity extends AppCompatActivity {
                                 if (isTextFile(entity.getName())) {
                                     descriptions.add(new Description(entity.getName(), entity.getPathLower()));
                                 } else {
-                                    Video.Status status = getVideoStatus(entity.getName());
+                                    Video.Status status = FileLoader.getVideoStatus(VideoListActivity.this, brand.getName(), entity.getName());
                                     videosArrayList.add(new Video(entity.getName(), entity.getPathLower(), getVideoFile(entity.getName()).getAbsolutePath(), status));
                                 }
                             }
@@ -255,7 +258,6 @@ public class VideoListActivity extends AppCompatActivity {
                         }
                         Collections.sort(videosArrayList, new Video.Comparator());
                         videoRecyclerAdapter.notifyDataSetChanged();
-                        updateVideosCount();
                         downloadDescriptions();
                         checkForUpdates();
                         return;
@@ -281,35 +283,6 @@ public class VideoListActivity extends AppCompatActivity {
 
     private boolean isTextFile(String fileName) {
         return fileName.toLowerCase(Locale.getDefault()).endsWith(".txt");
-    }
-
-    private Video.Status getVideoStatus(String fileName) {
-        Video.Status status = Video.Status.valueOf(Utility.Prefs
-                .getPrefString(this, fileName+Consts.Keys.STATUS, Video.Status.NotDownloaded.name()));
-
-        if (!PermissionManager.getInstance().hasPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE)) {
-            status = Video.Status.NotDownloaded;
-        } else {
-            File brandFolder = FileLoader.getBrandFolder(this, brand);
-            if (brandFolder != null) {
-                File videoFile = new File(brandFolder, fileName);
-                if (!videoFile.exists()) {
-                    if (status != Video.Status.NotDownloaded) {
-                        status = Video.Status.Deleted;
-                    }
-                } else {
-                    if (status == Video.Status.Downloading) {
-                        status = Video.Status.Incomplete;
-                    } else if (status != Video.Status.Incomplete && status != Video.Status.Outdated) {
-                        status = Video.Status.Downloaded;
-                    }
-                }
-            } else if (status != Video.Status.NotDownloaded) {
-                status = Video.Status.Deleted;
-            }
-        }
-
-        return status;
     }
 
     private void checkForUpdates() {
@@ -389,7 +362,7 @@ public class VideoListActivity extends AppCompatActivity {
     }
 
     private File getVideoFile(String videoName) {
-        File brandFolder = FileLoader.getBrandFolder(this, brand);
+        File brandFolder = FileLoader.getBrandFolder(this, brand.getName());
         if (brandFolder != null) {
             File videoFile = new File(brandFolder, videoName);
             return videoFile;
@@ -493,7 +466,7 @@ public class VideoListActivity extends AppCompatActivity {
         }
 
         File videoFile = getVideoFile(videoToDownload.getTitle());
-        downloadVideoTask = new DownloadVideoTask(this, DropboxClientFactory.getClient(this), videoFile, videoToDownload, new DownloadVideoTask.Callback() {
+        downloadVideoTask = new DownloadVideoTask(DropboxClientFactory.getClient(this), videoFile, videoToDownload, new DownloadVideoTask.Callback() {
             @Override
             public void onDownloadStart(Video video) {
                 updateVideoStatus(video, Video.Status.Downloading);
@@ -505,7 +478,6 @@ public class VideoListActivity extends AppCompatActivity {
             @Override
             public void onDownloadComplete(Video video, File result) {
                 updateVideoStatus(video, Video.Status.Downloaded);
-                updateVideosCount();
             }
             @Override
             public void onError(Video video, Exception e) {
@@ -544,18 +516,6 @@ public class VideoListActivity extends AppCompatActivity {
         progressDialogDownload.setMessage(progressText);
         video.setProgress(progress, progressText);
         videoRecyclerAdapter.notifyItemChanged(videosArrayList.indexOf(video));
-    }
-
-    private void updateVideosCount() {
-        int total = videosArrayList.size();
-        int downloaded = 0;
-        for (int i = 0; i < total; i++) {
-            Video.Status status = videosArrayList.get(i).getStatus();
-            if (status == Video.Status.Downloaded || status == Video.Status.Outdated) {
-                downloaded++;
-            }
-        }
-        Utility.Prefs.setPref(VideoListActivity.this, brand.getName()+Consts.Keys.DOWNLOADED_VIDEOS, downloaded);
     }
 
     private int descriptionsToDownload;

@@ -41,6 +41,13 @@
     <string name="questions_asked_by_customers">Any consumer question not answered through this video can be submitted below</string>
     <string name="submit">SUBMIT</string>
 
+    <string name="text__available_for_download_plural">There are %s videos available for download. You can choose to download all videos now in background or you can download later manually.</string>
+    <string name="text__available_for_download_singular">There is one new video available for download. You can choose to download it now in background or you can download later manually.</string>
+    <string name="download_now">Download Now</string>
+    <string name="download_later">Download Later</string>
+    <string name="successfully_downloaded_videos">Successfully downloaded %1$d out of %2$d videos</string>
+
+    <string name="try_again">Try Again</string>
     <string name="connect_to_internet">Connect to internet and try again</string>
     <string name="unable_to_get_brands">Unable to get Brands. Please try again.</string>
     <string name="unable_to_get_videos">Unable to get Videos. Please try again.</string>

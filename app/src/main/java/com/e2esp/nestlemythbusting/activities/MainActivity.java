@@ -1,9 +1,14 @@
 package com.e2esp.nestlemythbusting.activities;
 
 import android.app.ProgressDialog;
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.graphics.Typeface;
 import android.support.v4.widget.SwipeRefreshLayout;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
@@ -20,7 +25,14 @@ import com.dropbox.core.v2.files.Metadata;
 import com.e2esp.nestlemythbusting.R;
 import com.e2esp.nestlemythbusting.adapters.BrandRecyclerAdapter;
 import com.e2esp.nestlemythbusting.callbacks.OnBrandClickListener;
+import com.e2esp.nestlemythbusting.helpers.FileLoader;
 import com.e2esp.nestlemythbusting.models.Brand;
+import com.e2esp.nestlemythbusting.models.BrandTitle;
+import com.e2esp.nestlemythbusting.models.BrandVideosToDownload;
+import com.e2esp.nestlemythbusting.models.Video;
+import com.e2esp.nestlemythbusting.models.VideoTitle;
+import com.e2esp.nestlemythbusting.models.VideoToDownload;
+import com.e2esp.nestlemythbusting.tasks.DownloadMultipleVideosTask;
 import com.e2esp.nestlemythbusting.utils.Consts;
 import com.e2esp.nestlemythbusting.helpers.DropboxClientFactory;
 import com.e2esp.nestlemythbusting.tasks.ListFolderTask;
@@ -50,6 +62,9 @@ public class MainActivity extends AppCompatActivity {
 
     private ListFolderTask listFolderTask;
     private ProgressDialog progressDialog;
+
+    private ArrayList<BrandVideosToDownload> brandVideosToDownload;
+    private DownloadMultipleVideosTask downloadMultipleVideosTask;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -158,7 +173,7 @@ public class MainActivity extends AppCompatActivity {
                         textViewDescription.setVisibility(View.VISIBLE);
                         Collections.sort(brandArrayList, new Brand.Comparator());
                         brandRecyclerAdapter.notifyDataSetChanged();
-                        updateVideosCount();
+                        updateVideosCount(true);
                         return;
                     }
                 }
@@ -187,22 +202,15 @@ public class MainActivity extends AppCompatActivity {
         textViewSwipeHint.setVisibility(View.GONE);
         brandArrayList.clear();
 
-        brandArrayList.add(new Brand("NESTLÉ BUNYAD", R.drawable.nestle_bunyad));
-        brandArrayList.add(new Brand("NESTLÉ EVERYDAY", R.drawable.nestle_everyday));
-        brandArrayList.add(new Brand("NESTLÉ JUICES", R.drawable.nestle_juices));
-        brandArrayList.add(new Brand("NESTLÉ MAGGI", R.drawable.nestle_maggi));
-        brandArrayList.add(new Brand("NESTLÉ MILKPAK", R.drawable.nestle_milkpak));
-        brandArrayList.add(new Brand("NESTLÉ MILKPAK YOGURT", R.drawable.nestle_milkpak_yogurt));
-        brandArrayList.add(new Brand("NESTLÉ NESCAFÉ", R.drawable.nestle_nescafe));
-        brandArrayList.add(new Brand("NESTLÉ NIDO FORTIGROW", R.drawable.nestle_nido_fortigrow));
-        brandArrayList.add(new Brand("NESTLÉ NIDO GUMS", R.drawable.nestle_nido_gums));
-        brandArrayList.add(new Brand("NESTLÉ PURE LIFE", R.drawable.nestle_pure_life));
-        brandArrayList.add(new Brand("NESTLÉ Corporate", R.drawable.nestle_corporate));
+        ArrayList<BrandTitle> brandTitles = OfflineDataLoader.brandTitlesList();
+        for (BrandTitle brandTitle: brandTitles) {
+            brandArrayList.add(new Brand(brandTitle.getTitle(), brandTitle.getLogoRes()));
+        }
 
         textViewDescription.setVisibility(View.VISIBLE);
         Collections.sort(brandArrayList, new Brand.Comparator());
         brandRecyclerAdapter.notifyDataSetChanged();
-        updateVideosCount();
+        updateVideosCount(true);
     }
 
     private boolean isImage(Metadata metadata) {
@@ -212,15 +220,102 @@ public class MainActivity extends AppCompatActivity {
         return mimeType != null && mimeType.startsWith("image/");
     }
 
-    private void updateVideosCount() {
+    private void updateVideosCount(boolean initiateDownload) {
         if (brandRecyclerAdapter != null && brandArrayList != null && brandArrayList.size() > 0) {
+            int totalVideos = 0;
+            int totalDownloaded = 0;
+            brandVideosToDownload = new ArrayList<>();
             for (int i = 0; i < brandArrayList.size(); i++) {
                 Brand brand = brandArrayList.get(i);
-                int total = OfflineDataLoader.getTotalVideosCount(brand.getName());
-                int downloaded = Utility.Prefs.getPrefInt(MainActivity.this, brand.getName()+Consts.Keys.DOWNLOADED_VIDEOS, 0);
-                brand.setVideos(total, downloaded);
+                String brandPath = "/" + brand.getName().toLowerCase() + "/";
+                ArrayList<VideoTitle> videosTitles = OfflineDataLoader.videoTitlesList(brand.getName());
+                int downloaded = 0;
+                ArrayList<VideoToDownload> videosToDownload = new ArrayList<>();
+                for (VideoTitle videoTitle: videosTitles) {
+                    String title = videoTitle.getTitle()+".mp4";
+                    Video.Status status = FileLoader.getVideoStatus(this, brand.getName(), title);
+                    if (status == Video.Status.Downloaded || status == Video.Status.Outdated) {
+                        downloaded++;
+                    } else {
+                        String path = brandPath+title.toLowerCase();
+                        videosToDownload.add(new VideoToDownload(title, path));
+                    }
+                }
+                totalVideos += videosTitles.size();
+                totalDownloaded += downloaded;
+                brand.setVideos(videosTitles.size(), downloaded);
+                if (videosToDownload.size() > 0) {
+                    brandVideosToDownload.add(new BrandVideosToDownload(brand.getName(), videosToDownload));
+                }
             }
             brandRecyclerAdapter.notifyDataSetChanged();
+            if (initiateDownload && brandVideosToDownload.size() > 0) {
+                showVideosToDownloadDialog(totalDownloaded, totalVideos - totalDownloaded);
+            }
+        }
+    }
+
+    private void showVideosToDownloadDialog(int downloaded, int toBeDownloaded) {
+        String videosAvailableForDownload = "";
+        if (toBeDownloaded > 1) {
+            String videosCount = toBeDownloaded + (downloaded > 0 ? " new" : "");
+            videosAvailableForDownload = getString(R.string.text__available_for_download_plural, videosCount);
+        } else {
+            videosAvailableForDownload = getString(R.string.text__available_for_download_singular);
+        }
+        new AlertDialog.Builder(this).setMessage(videosAvailableForDownload).setPositiveButton(R.string.download_now, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.dismiss();
+                startDownloadingVideosInBackground();
+            }
+        }).setNegativeButton(R.string.download_later, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.dismiss();
+            }
+        }).show();
+    }
+
+    private void startDownloadingVideosInBackground() {
+        if (!Utility.isInternetConnected(this, false)) {
+            Utility.showSnackbar(brandRecyclerView, R.string.connect_to_internet, R.string.try_again, new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    startDownloadingVideosInBackground();
+                }
+            });
+            return;
+        }
+
+        if (downloadMultipleVideosTask != null) {
+            downloadMultipleVideosTask.cancel(true);
+        }
+
+        downloadMultipleVideosTask = new DownloadMultipleVideosTask(this, DropboxClientFactory.getClient(this), brandVideosToDownload, new DownloadMultipleVideosTask.Callback() {
+            @Override
+            public void onDownloadComplete(int downloaded, int total) {
+                sendDownloadCompleteBroadcast(downloaded, total);
+            }
+        });
+        downloadMultipleVideosTask.execute();
+    }
+
+    private void sendDownloadCompleteBroadcast(int downloaded, int total) {
+        Intent intent = new Intent(Consts.Actions.VIDEOS_DOWNLOADED);
+        intent.putExtra(Consts.Extras.DOWNLOADED, downloaded);
+        intent.putExtra(Consts.Extras.TOTAL, total);
+        sendOrderedBroadcast(intent, null);
+    }
+
+    private void showDownloadCompleteDialog(int downloaded, int total) {
+        if (downloaded > 0 && total > 0 && total >= downloaded) {
+            new AlertDialog.Builder(this).setMessage(getString(R.string.successfully_downloaded_videos, downloaded, total)).setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    dialog.dismiss();
+                }
+            }).show();
         }
     }
 
@@ -233,7 +328,21 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        updateVideosCount();
+        updateVideosCount(false);
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        IntentFilter intentFilter = new IntentFilter(Consts.Actions.VIDEOS_DOWNLOADED);
+        intentFilter.setPriority(1);
+        registerReceiver(videosDownloadedReceiver, intentFilter);
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        unregisterReceiver(videosDownloadedReceiver);
     }
 
     @Override
@@ -243,5 +352,18 @@ public class MainActivity extends AppCompatActivity {
             listFolderTask.cancel(true);
         }
     }
+
+    private BroadcastReceiver videosDownloadedReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            Bundle extras = intent.getExtras();
+            if (extras != null) {
+                int downloaded = extras.getInt(Consts.Extras.DOWNLOADED, 0);
+                int total = extras.getInt(Consts.Extras.TOTAL, 0);
+                showDownloadCompleteDialog(downloaded, total);
+            }
+            abortBroadcast();
+        }
+    };
 
 }

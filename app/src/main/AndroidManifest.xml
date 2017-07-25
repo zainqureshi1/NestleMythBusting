@@ -65,10 +65,16 @@
             </intent-filter>
         </activity>
 
-        <receiver
-            android:name=".receivers.NetworkStateReceiver">
+        <receiver android:name=".receivers.NetworkStateReceiver">
             <intent-filter>
                 <action android:name="android.net.conn.CONNECTIVITY_CHANGE" />
+            </intent-filter>
+        </receiver>
+
+        <receiver
+            android:name=".receivers.VideosDownloadedReceiver" >
+            <intent-filter>
+                <action android:name="com.e2esp.nestlemythbusting.ACTION_VIDEOS_DOWNLOADED" />
             </intent-filter>
         </receiver>
 

@@ -9,6 +9,7 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.preference.PreferenceManager;
 import android.provider.MediaStore;
+import android.support.design.widget.Snackbar;
 import android.util.TypedValue;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
@@ -50,6 +51,14 @@ public class Utility {
 
     public static void showToast(Context context, String text) {
         Toast.makeText(context, text, Toast.LENGTH_SHORT).show();
+    }
+
+    public static void showSnackbar(View view, String text, String action, View.OnClickListener onActionClickListener) {
+        Snackbar.make(view, text, Snackbar.LENGTH_LONG).setAction(action, onActionClickListener).show();
+    }
+
+    public static void showSnackbar(View view, int textRes, int actionRes, View.OnClickListener onActionClickListener) {
+        Snackbar.make(view, textRes, Snackbar.LENGTH_LONG).setAction(actionRes, onActionClickListener).show();
     }
 
     public static String currentDateTimeString() {

@@ -13,12 +13,17 @@ public class Consts {
     public static class Extras {
         public static final String BRAND = "EXTRA_BRAND";
         public static final String VIDEO = "EXTRA_VIDEO";
+        public static final String DOWNLOADED = "EXTRA_DOWNLOADED";
+        public static final String TOTAL = "EXTRA_TOTAL";
     }
 
     public static class Keys {
         public static final String APP_ACCESS = "APP_ACCESS";
         public static final String STATUS = "_STATUS";
-        public static final String DOWNLOADED_VIDEOS = "_DOWNLOADED_VIDEOS";
+    }
+
+    public static class Actions {
+        public static final String VIDEOS_DOWNLOADED = "com.e2esp.nestlemythbusting.ACTION_VIDEOS_DOWNLOADED";
     }
 
     public static String FAQFilePath = "/FAQ.txt";
