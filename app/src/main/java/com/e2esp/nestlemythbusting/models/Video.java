@@ -20,6 +20,7 @@ public class Video implements Parcelable {
         Downloaded,
         Incomplete,
         Outdated,
+        NotPlayable,
         Deleted
     }
 

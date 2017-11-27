@@ -7,6 +7,7 @@ import android.os.Environment;
 import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
@@ -55,9 +56,13 @@ public class PlayerActivity extends AppCompatActivity {
         setTitle(video.getTitleWithoutExt());
 
         setupView();
-        setupVideo();
-        toggleFullscreen();
-        sendAnalyticsScreenHit();
+        if (setupVideo()) {
+            toggleFullscreen();
+            sendAnalyticsScreenHit();
+        } else {
+            setResult(RESULT_FIRST_USER, intent);
+            finish();
+        }
     }
 
     private void setupView() {
@@ -83,18 +88,24 @@ public class PlayerActivity extends AppCompatActivity {
         });
     }
 
-    private void setupVideo() {
+    private boolean setupVideo() {
         File brandFolder = getBrandFolder();
         if (brandFolder == null) {
-            return;
+            return false;
         }
         File videoFile = new File(brandFolder, video.getTitle());
         if (!videoFile.exists()) {
-            return;
+            return false;
         }
 
-        videoViewPlayer.setVideoPath(videoFile.getAbsolutePath());
-        videoViewPlayer.start();
+        try {
+            videoViewPlayer.setVideoPath(videoFile.getAbsolutePath());
+            videoViewPlayer.start();
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            return false;
+        }
+        return true;
     }
 
     private void toggleFullscreen() {

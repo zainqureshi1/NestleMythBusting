@@ -234,7 +234,7 @@ public class MainActivity extends AppCompatActivity {
                 for (VideoTitle videoTitle: videosTitles) {
                     String title = videoTitle.getTitle()+".mp4";
                     Video.Status status = FileLoader.getVideoStatus(this, brand.getName(), title);
-                    if (status == Video.Status.Downloaded || status == Video.Status.Outdated) {
+                    if (status == Video.Status.Downloaded) {
                         downloaded++;
                     } else {
                         String path = brandPath+title.toLowerCase();

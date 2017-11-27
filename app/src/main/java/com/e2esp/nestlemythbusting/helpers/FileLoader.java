@@ -80,20 +80,18 @@ public class FileLoader {
         return status;
     }
 
-    public static File getFAQFile(Context context) {
+    static File getFAQFile(Context context) {
         File appFolder = getAppFolder(context);
         if (appFolder != null) {
-            File faqFile = new File(appFolder, "FAQ.txt");
-            return faqFile;
+            return new File(appFolder, "FAQ.txt");
         }
         return null;
     }
 
-    public static File getTEMPFile(Context context) {
+    static File getTEMPFile(Context context) {
         File appFolder = getAppFolder(context);
         if (appFolder != null) {
-            File faqFile = new File(appFolder, "TEMP.txt");
-            return faqFile;
+            return new File(appFolder, "TEMP.txt");
         }
         return null;
     }

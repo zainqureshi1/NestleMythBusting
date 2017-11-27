@@ -57,8 +57,8 @@ public class OfflineDataLoader {
                 videoTitlesList.add(new VideoTitle("YOGURT Long Shelf Life", "How does yogurt have a long shelf life? Does Yogurt have any preservatives?"));
                 break;
             case "NESTLÉ NESCAFÉ":
-                videoTitlesList.add(new VideoTitle("Skin related issue", "Is it possible to have skin related or complexion issues after having coffee?"));
-                videoTitlesList.add(new VideoTitle("Garam Taseer", "Does coffee have Garam Taseer (heaty perception)?"));
+                //videoTitlesList.add(new VideoTitle("Skin related issue", "Is it possible to have skin related or complexion issues after having coffee?"));
+                //videoTitlesList.add(new VideoTitle("Garam Taseer", "Does coffee have Garam Taseer (heaty perception)?"));
                 break;
             case "NESTLÉ NIDO FORTIGROW":
                 //videoTitlesList.add(new VideoTitle("How is it made", "How is NIDO (powder milk) made. How do we fortify it?"));

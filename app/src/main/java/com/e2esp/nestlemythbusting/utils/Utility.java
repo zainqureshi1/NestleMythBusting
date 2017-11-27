@@ -1,6 +1,7 @@
 package com.e2esp.nestlemythbusting.utils;
 
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.Typeface;
@@ -9,7 +10,9 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.preference.PreferenceManager;
 import android.provider.MediaStore;
+import android.support.annotation.Nullable;
 import android.support.design.widget.Snackbar;
+import android.support.v7.app.AlertDialog;
 import android.util.TypedValue;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
@@ -59,6 +62,21 @@ public class Utility {
 
     public static void showSnackbar(View view, int textRes, int actionRes, View.OnClickListener onActionClickListener) {
         Snackbar.make(view, textRes, Snackbar.LENGTH_LONG).setAction(actionRes, onActionClickListener).show();
+    }
+
+    public static void showOkAlert(Context context, String title, String text, @Nullable String action, @Nullable DialogInterface.OnClickListener onClickListener) {
+        if (action == null || action.isEmpty()) {
+            action = context.getString(R.string.ok);
+        }
+        if (onClickListener == null) {
+            onClickListener = new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    dialog.dismiss();
+                }
+            };
+        }
+        new AlertDialog.Builder(context).setTitle(title).setMessage(text).setPositiveButton(action, onClickListener).show();
     }
 
     public static String currentDateTimeString() {

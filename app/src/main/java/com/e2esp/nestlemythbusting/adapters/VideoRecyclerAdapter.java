@@ -53,7 +53,7 @@ public class VideoRecyclerAdapter extends RecyclerView.Adapter<VideoRecyclerAdap
         holder.bindView(videosList.get(position));
     }
 
-    public class VideoViewHolder extends RecyclerView.ViewHolder {
+    class VideoViewHolder extends RecyclerView.ViewHolder {
 
         private View topView;
         private ImageView imageViewPreview;
@@ -63,7 +63,7 @@ public class VideoRecyclerAdapter extends RecyclerView.Adapter<VideoRecyclerAdap
         private TextView textViewDownload;
         private ProgressBar progressBar;
 
-        public VideoViewHolder(View itemView) {
+        VideoViewHolder(View itemView) {
             super(itemView);
             topView = itemView;
             imageViewPreview = (ImageView) itemView.findViewById(R.id.imageViewVideoPreview);
@@ -79,7 +79,7 @@ public class VideoRecyclerAdapter extends RecyclerView.Adapter<VideoRecyclerAdap
             progressBar = (ProgressBar) itemView.findViewById(R.id.progressBarVideoProgress);
         }
 
-        public void bindView(final Video video) {
+        void bindView(final Video video) {
             textViewTitle.setText(video.getTitleWithoutExt());
             textViewDescription.setText(video.getDescription().getDescription());
             Bitmap thumbnail = video.getThumbnail();
@@ -121,6 +121,13 @@ public class VideoRecyclerAdapter extends RecyclerView.Adapter<VideoRecyclerAdap
                     if (thumbnail != null) {
                         imageViewPreview.setImageBitmap(video.getThumbnail());
                     }
+                    break;
+                case NotPlayable:
+                    textViewStatus.setText(context.getString(R.string.not_playable));
+                    textViewDownload.setVisibility(View.VISIBLE);
+                    textViewDownload.setText(context.getString(R.string.download_again));
+                    progressBar.setVisibility(View.GONE);
+                    imageViewPreview.setImageResource(R.drawable.video_preview);
                     break;
                 case Deleted:
                     textViewStatus.setText(context.getString(R.string.deleted));

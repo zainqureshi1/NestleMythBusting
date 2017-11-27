@@ -50,6 +50,7 @@ import java.util.Locale;
 
 public class VideoListActivity extends AppCompatActivity {
     private final String TAG = this.getClass().getName();
+    private final int REQUEST_CODE_PLAYER = 1021;
 
     private TextView textViewSwipeHint;
     private SwipeRefreshLayout swipeRefreshLayout;
@@ -374,11 +375,10 @@ public class VideoListActivity extends AppCompatActivity {
         int toastStringRes = -1;
         switch (video.getStatus()) {
             case Downloaded:
-            case Outdated:
                 Intent intent = new Intent(this, PlayerActivity.class);
                 intent.putExtra(Consts.Extras.BRAND, brand);
                 intent.putExtra(Consts.Extras.VIDEO, video);
-                startActivity(intent);
+                startActivityForResult(intent, REQUEST_CODE_PLAYER);
                 return;
             case NotDownloaded:
                 toastStringRes = R.string.download_video_first;
@@ -388,6 +388,7 @@ public class VideoListActivity extends AppCompatActivity {
                 break;
             case Incomplete:
             case Deleted:
+            case Outdated:
                 toastStringRes = R.string.download_video_again;
                 break;
         }
@@ -592,6 +593,30 @@ public class VideoListActivity extends AppCompatActivity {
                                 + " " + getString(R.string.grant_storage_permission));
                     }
                 });
+    }
+
+    private void showVideoErrorDialog(String title) {
+        Utility.showOkAlert(this, getString(R.string.unable_to_play_video, title), getString(R.string.unable_to_play_video_explanation), null, null);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == REQUEST_CODE_PLAYER && resultCode == RESULT_FIRST_USER) {
+            if (data != null) {
+                Video returnedVideo = data.getParcelableExtra(Consts.Extras.VIDEO);
+                if (returnedVideo != null) {
+                    String videoTitle = returnedVideo.getTitle();
+                    for (Video video : videosArrayList) {
+                        if (video.getTitle().equals(videoTitle)) {
+                            updateVideoStatus(video, Video.Status.NotPlayable);
+                            showVideoErrorDialog(videoTitle);
+                            break;
+                        }
+                    }
+                }
+            }
+        }
     }
 
     @Override

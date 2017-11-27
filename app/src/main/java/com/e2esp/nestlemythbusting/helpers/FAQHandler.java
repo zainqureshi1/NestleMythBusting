@@ -171,6 +171,16 @@ public class FAQHandler {
 
     public void saveFAQ(Brand brand, String question) {
         File tempFile = FileLoader.getTEMPFile(context);
+        if (tempFile == null) {
+            return;
+        }
+        if (!tempFile.exists()) {
+            try {
+                tempFile.createNewFile();
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            }
+        }
         addQuestionInFAQFile(tempFile, brand, question);
 
         showFAQSuccess();
@@ -185,6 +195,9 @@ public class FAQHandler {
             return;
         }
         File tempFile = FileLoader.getTEMPFile(context);
+        if (tempFile == null || !tempFile.exists()) {
+            return;
+        }
         final String savedFaq = readFAQFile(tempFile);
         Log.d(TAG, "Saved FAQ :: "+savedFaq);
         if (savedFaq.isEmpty()) {
@@ -196,6 +209,9 @@ public class FAQHandler {
         }
 
         File faqFile = FileLoader.getFAQFile(context);
+        if (faqFile == null) {
+            return;
+        }
         downloadFAQTask = new DownloadFileTask(context, DropboxClientFactory.getClient(context), faqFile, Consts.FAQFilePath, new DownloadFileTask.Callback() {
             @Override
             public void onDownloadComplete(File result) {
@@ -266,7 +282,9 @@ public class FAQHandler {
             public void onUploadComplete(FileMetadata result) {
                 Log.d(TAG, "Uploaded New FAQ");
                 File tempFile = FileLoader.getTEMPFile(context);
-                tempFile.delete();
+                if (tempFile != null) {
+                    tempFile.delete();
+                }
             }
             @Override
             public void onError(Exception e) {
